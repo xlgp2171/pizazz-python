@@ -1,0 +1,17 @@
+client:
+  acks: "0"
+  buffer_memory: 67108864
+  compression_type: none
+  retries: 0
+  batch_size: 32768
+  linger_ms: 0
+  max_request_size: 1028576
+  request_timeout_ms: 30000
+  enable_idempotence: false
+  max_in_flight_requests_per_connection: 15
+  partitioner_class: org_pizazz_kafka_support_RandomPartitioner
+config:
+  mode: ASYNC
+  transactionProcessor:
+    classpath: org_pizazz_kafka_producer_TransactionProcessor
+  senderProcessor:  

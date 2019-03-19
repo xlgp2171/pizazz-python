@@ -1,0 +1,12 @@
+client:
+  fetch_min_bytes: 64
+  enable_auto_commit: false
+  max_poll_records: 400
+config:
+  mode: MANUAL_ASYNC_ROUND
+  ignore: OFFSET
+  duration: 3000
+  offsetProcessor:
+    classpath: piz_component.kafka.consumer.plugin.OffsetProcessor
+  dataProcessor:
+    classpath: piz_component.kafka.consumer.plugin.SequenceAdapter
