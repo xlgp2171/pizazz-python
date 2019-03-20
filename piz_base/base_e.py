@@ -59,7 +59,10 @@ class AbstractException(Exception):
         self.msg = msg
 
     def get_message(self):
-        return "".format("{}{}", self.code, self.msg)
+        return "{}{}".format(self.code, self.msg)
+
+    def __str__(self):
+        return self.get_message()
 
 
 class AssertException(AbstractException):

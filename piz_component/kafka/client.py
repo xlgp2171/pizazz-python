@@ -87,7 +87,7 @@ class Subscription(AbstractClient):
                     logger.error("{} pool data:{}".format(self.loop, e.get_message()))
             finally:
                 self.lock.release()
-            if not records and not self.loop:
+            if not records or not self.loop:
                 continue
             self.processor.consume_ready(self.get_consumer(), executor)
             try:

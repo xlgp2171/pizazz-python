@@ -21,7 +21,7 @@ class SequenceAdapter(IProcessAdapter):
         self.mode = None
 
     def initialize(self, config):
-        logger.info("adapter SequenceAdapter initialized,config={}", config)
+        logger.info("adapter SequenceAdapter initialized,config={}".format(config))
 
     def set(self, mode):
         if not hasattr(ConsumerModeEnum, str(mode)):
@@ -58,16 +58,11 @@ class OffsetProcessor(IOffsetProcessor):
         self.ignore = None
         self.lock = threading.Lock()
 
-    def _callback(self):
-        make_committed_fn = self.__make_committed
-
-        def on_complete_fn(offsets, e):
-            if e and isinstance(e, Exception):
-                logger.error("consumer commit:{} {}".format(offsets, str(e)))
-            elif offsets:
-                make_committed_fn(offsets)
-
-        return on_complete_fn
+    def _callback(self, offsets, e):
+        if e and isinstance(e, Exception):
+            logger.error("consumer commit:{} {}".format(offsets, str(e)))
+        elif offsets:
+            self.__make_committed(offsets)
 
     def __offset_commit(self, consumer, force):
         # {TopicPartition: OffsetAndMetadata}
@@ -89,16 +84,16 @@ class OffsetProcessor(IOffsetProcessor):
             else:
                 self.__make_committed(tmp)
         elif self.mode.is_each():
-            consumer.commit_async(tmp, self._callback())
+            consumer.commit_async(tmp, lambda offset, exp: self._callback(offset, exp))
         else:
             consumer.commit_async(
-                callbaek=self._callback())
+                callback=lambda offset, exp: self._callback(offset, exp))
         logger.debug("consumer commit:{}".format(tmp))
 
     def __make_committed(self, offsets):
         self.lock.acquire()
         try:
-            for k, v in offsets:
+            for k, v in offsets.items():
                 if k in self.offset_committed:
                     if v.offset > self.offset_committed.get(k).offset:
                         self.offset_committed[k] = v
@@ -129,7 +124,7 @@ class OffsetProcessor(IOffsetProcessor):
             self.__offset_commit(consumer, False)
 
     def complete(self, consumer, e):
-        if self.mode != ConsumerModeEnum.MANUAL_NONE_NONE and not self.mode.is_auto and not e:
+        if self.mode != ConsumerModeEnum.MANUAL_NONE_NONE and not self.mode.is_auto() and not e:
             self.__offset_commit(consumer, False)
             logger.debug("consumer commit sync:{}".format(self.mode.is_sync()))
 
