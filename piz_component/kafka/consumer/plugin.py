@@ -45,7 +45,7 @@ class SequenceAdapter(IProcessAdapter):
         return json.dumps({"STATUS": "activate", "MODE": str(self.mode), "ADAPTER": str(self.__class__)})
 
     def destroy(self, timeout=0):
-        logger.info("adapter SequenceAdapter destroyed,timeout={}", timeout)
+        logger.info("adapter SequenceAdapter destroyed,timeout={}".format(timeout))
 
 
 class OffsetProcessor(IOffsetProcessor):
