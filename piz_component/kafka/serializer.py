@@ -11,7 +11,7 @@ class StringSerializer(Serializer):
             self.encoding = config.get("serializer_encoding", self.encoding)
 
     def serialize(self, topic, value):
-        return None if not value else str(value, self.encoding)
+        return None if not value else bytes(value, self.encoding)
 
 
 class StringDeserializer(Deserializer):

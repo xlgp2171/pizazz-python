@@ -1,12 +1,12 @@
 client:
-  acks: "1"
+  acks: 1
   retries: 1
   batch_size: 128
   linger_ms: 1
-  enable_idempotence: false
-  partitioner_class: org_pizazz_kafka_support_RandomPartitioner
+  # enable_idempotence: False
+  partitioner: piz_component.kafka.support.RandomPartitioner
 config:
   mode: ASYNC
   transactionProcessor:
-    classpath: org_pizazz_kafka_producer_TransactionProcessor
+    classpath: piz_component.kafka.producer.plugin.TransactionProcessor
   senderProcessor: 

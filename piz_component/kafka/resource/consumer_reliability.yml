@@ -4,9 +4,10 @@ client:
   max_partition_fetch_bytes: 1048576
   session_timeout_ms: 5000
   auto_offset_reset: earliest
-  enable_auto_commit: false
-  exclude_internal_topics: false
+  enable_auto_commit: False
+  exclude_internal_topics: False
   fetch_max_bytes: 52428800
+  # isolation_level: read_uncommitted
   max_poll_interval_ms: 300000
   max_poll_records: 600
   receive_buffer_bytes: 65536

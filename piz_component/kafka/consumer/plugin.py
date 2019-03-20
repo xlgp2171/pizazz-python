@@ -84,10 +84,10 @@ class OffsetProcessor(IOffsetProcessor):
             else:
                 self.__make_committed(tmp)
         elif self.mode.is_each():
-            consumer.commit_async(tmp, lambda offset, exp: self._callback(offset, exp))
+            consumer.commit_async(tmp, lambda offset, set_e: self._callback(offset, set_e))
         else:
             consumer.commit_async(
-                callback=lambda offset, exp: self._callback(offset, exp))
+                callback=lambda offset, set_e: self._callback(offset, set_e))
         logger.debug("consumer commit:{}".format(tmp))
 
     def __make_committed(self, offsets):
@@ -138,11 +138,11 @@ class OffsetProcessor(IOffsetProcessor):
         if "group_id" not in config or not config["group_id"]:
             config["group_id"] = "pizazz"
             logger.info("set subscription config:group_id=pizazz")
-        # Python版本新增功能：实例KEY化反序列化类
+        # Python版本新增功能：实例化KEY反序列化类
         if "key_deserializer" in config and isinstance(config["key_deserializer"], str):
             config["key_deserializer"] = ClassUtils.new_class(config["key_deserializer"], Deserializer)
             logger.info("set subscription config:key_deserializer={}".format(config["key_deserializer"]))
-        # Python版本新增功能：实例VALUE化反序列化类
+        # Python版本新增功能：实例化VALUE反序列化类
         if "value_deserializer" in config and isinstance(config["value_deserializer"], str):
             config["value_deserializer"] = ClassUtils.new_class(config["value_deserializer"], Deserializer)
             logger.info("set subscription config:value_deserializer={}".format(config["value_deserializer"]))

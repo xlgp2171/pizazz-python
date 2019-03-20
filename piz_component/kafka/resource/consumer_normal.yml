@@ -1,6 +1,7 @@
 client:
   fetch_min_bytes: 64
-  enable_auto_commit: false
+  enable_auto_commit: False
+  # isolation_level: read_uncommitted
   max_poll_records: 400
 config:
   mode: MANUAL_ASYNC_ROUND

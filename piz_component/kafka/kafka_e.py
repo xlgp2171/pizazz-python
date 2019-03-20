@@ -32,6 +32,8 @@ class KafkaCodeEnum(object):
     KFK_0013 = "KFK0013#"
     # 节点信息获取异常
     KFK_0014 = "KFK0014#"
+    # 不支持的发布模式
+    KFK_0015 = "KFK0015#"
 
 
 class KafkaException(AbstractException):

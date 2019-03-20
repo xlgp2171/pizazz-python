@@ -1,6 +1,7 @@
 """"""
 import logging
 
+from kafka.partitioner import DefaultPartitioner
 from kafka.structs import TopicPartition
 
 import piz_component.kafka.helper as hr
@@ -11,6 +12,36 @@ from piz_component.kafka.kafka_e import KafkaException, KafkaCodeEnum
 from piz_component.kafka.producer.enum import ProducerTemplateEnum, ProducerModeEnum
 
 logger = logging.getLogger(__name__)
+
+
+class AbstractClient(AbstractClassPlugin):
+    def __init__(self):
+        super(AbstractClient, self).__init__()
+        self.initialized = False
+        self.convertor = None
+
+    def initialize(self, config):
+        if self.initialized:
+            raise KafkaException(BasicCodeEnum.MSG_0020, "client initialized")
+        else:
+            self.initialized = True
+        self.convertor = ConfigConvertor(config)
+
+    def get_convertor(self):
+        return self.convertor
+
+    def _is_initialize(self):
+        return self.initialized
+
+    def _log(self, msg, e=None):
+        if e and isinstance(e, AbstractException):
+            logger.error(e.get_message())
+        else:
+            logger.debug(msg)
+
+    def destroy(self, timeout=0):
+        if self.initialized:
+            SystemUtils.destroy(self.convertor, timeout)
 
 
 class ConfigConvertor(ICloseable):
@@ -124,31 +155,7 @@ class ConfigConvertor(ICloseable):
         self.config.clear()
 
 
-class AbstractClient(AbstractClassPlugin):
-    def __init__(self):
-        super(AbstractClient, self).__init__()
-        self.initialized = False
-        self.convertor = None
-
-    def initialize(self, config):
-        if self.initialized:
-            raise KafkaException(BasicCodeEnum.MSG_0020, "client initialized")
-        else:
-            self.initialized = True
-        self.convertor = ConfigConvertor(config)
-
-    def get_convertor(self):
-        return self.convertor
-
-    def _is_initialize(self):
-        return self.initialized
-
-    def _log(self, msg, e=None):
-        if e and isinstance(e, AbstractException):
-            logger.error(e.get_message())
-        else:
-            logger.debug(msg)
-
-    def destroy(self, timeout=0):
-        if self.initialized:
-            SystemUtils.destroy(self.convertor, timeout)
+class RandomPartitioner(DefaultPartitioner):
+    @classmethod
+    def __call__(cls, key, all_partitions, available):
+        return super(RandomPartitioner, cls).__call__(None, all_partitions, available)
