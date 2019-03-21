@@ -3,3 +3,6 @@
 /.settings
 /.idea
 /.pydevproject
+/build/
+/dist/
+/*.egg-info/
