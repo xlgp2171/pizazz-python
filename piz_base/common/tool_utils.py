@@ -1,12 +1,34 @@
 """"""
+import sys
+import os
+import platform
 import importlib
+import ctypes
+import inspect
 
 from piz_base.base_i import ICloseable
 from piz_base.base_e import UtilityException, BasicCodeEnum
+from piz_base.common.enum import OSTypeEnum
 from piz_base.common.validate_utils import AssertUtils
 
 
 class SystemUtils(object):
+    LOCAL_ENCODING = None
+    LOCAL_OS = None
+    LOCAL_DIR = None
+
+    @staticmethod
+    def get_local_encoding():
+        def_e = sys.getdefaultencoding()
+        return os.getenv("piz.encoding", def_e)
+
+    @staticmethod
+    def get_local_os():
+        name = platform.system()
+        bit = platform.architecture()[0]
+        version = platform.platform()
+        return OSTypeEnum.from_fn(name).set(bit, version)
+
     @staticmethod
     def destroy(target, timeout=0):
         if isinstance(target, ICloseable):
@@ -14,6 +36,23 @@ class SystemUtils(object):
                 target.destroy(timeout)
             except Exception:
                 pass
+
+    @staticmethod
+    def async_raise(tid, exctype):
+        """raises the exception, performs cleanup if needed"""
+        tid = ctypes.c_long(tid)
+
+        if not inspect.isclass(exctype):
+            exctype = type(exctype)
+        res = ctypes.pythonapi.PyThreadState_SetAsyncExc(tid, ctypes.py_object(exctype))
+
+        if res == 0:
+            pass
+        elif res != 1:
+            # """if it returns a number greater than one, you're in trouble,
+            # and you should call it again with exc=NULL to revert the effect"""
+            ctypes.pythonapi.PyThreadState_SetAsyncExc(tid, None)
+            raise SystemError("PyThreadState_SetAsyncExc failed")
 
 
 class ClassUtils(object):

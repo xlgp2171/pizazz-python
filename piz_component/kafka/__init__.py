@@ -6,4 +6,19 @@ from piz_component.kafka.producer.enum import ProducerModeEnum, ProducerTemplate
 from piz_component.kafka.producer.producer_i import ITransactionProcessor
 from piz_component.kafka.client import Subscription, Production
 from piz_component.kafka.kafka_e import KafkaCodeEnum, KafkaException
-from piz_component.kafka.support import ConfigConvertor, AbstractClient
+
+__all__ = [
+    'IDataExecutor',
+    'IOffsetProcessor',
+    'IProcessAdapter',
+    'ConsumerIgnoreEnum',
+    'ConsumerModeEnum',
+    'ConsumerTemplateEnum',
+    'ProducerModeEnum',
+    'ProducerTemplateEnum',
+    'ITransactionProcessor',
+    'Subscription',
+    'Production',
+    'KafkaCodeEnum',
+    'KafkaException'
+]
