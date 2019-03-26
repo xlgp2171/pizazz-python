@@ -5,7 +5,9 @@ import platform
 import importlib
 import ctypes
 import inspect
+import uuid
 
+from piz_base.context import RuntimeContext
 from piz_base.base_i import ICloseable
 from piz_base.base_e import UtilityException, BasicCodeEnum
 from piz_base.common.enum import OSTypeEnum
@@ -37,6 +39,23 @@ class SystemUtils(object):
             except Exception:
                 pass
 
+    @staticmethod
+    def add_shutdown_hook(closeable, timeout=0, name=None):
+        if isinstance(closeable, ICloseable):
+            name = name if isinstance(name, str) else SystemUtils.new_uuid()
+            return RuntimeContext.INSTANCE.add_shutdown_hook(name, lambda signum, frame: closeable.destroy(timeout))
+        else:
+            return None
+
+    @staticmethod
+    def new_uuid():
+        return str(uuid.uuid1())
+
+    @staticmethod
+    def new_uuid_simple():
+        return SystemUtils.new_uuid().replace("-", "")
+
+    # Python版本方法，用于结束线程
     @staticmethod
     def async_raise(tid, exctype):
         """raises the exception, performs cleanup if needed"""

@@ -25,13 +25,26 @@ class IPlugin(IObject, ICloseable):
         pass
 
 
-# Python版本新接口，用于规范json序列化和反序列化自定义对象
+# Python版本接口，用于规范json序列化和反序列化自定义对象
 class IJSON(object):
     """JSON的序列化和反序列化接口"""
     @classmethod
     def to_json(cls, target):
-        raise NotImplementedError("not supported ''")
+        raise NotImplementedError("not supported 'to_json'")
 
     @classmethod
     def from_json(cls, target):
-        raise NotImplementedError("not supported ''")
+        raise NotImplementedError("not supported 'from_json'")
+
+
+class IMessageOutput(ICloseable):
+    @classmethod
+    def is_enable(cls):
+        return False
+
+    def write(self, message):
+        raise NotImplementedError("not supported 'write'")
+
+    @classmethod
+    def throw_exception(cls, e):
+        pass

@@ -1,14 +1,13 @@
 """"""
 import logging
-import json
 import threading
 import copy
 
-from kafka import ConsumerRebalanceListener
+from kafka.consumer.subscription_state import ConsumerRebalanceListener
 from kafka.structs import OffsetAndMetadata, TopicPartition
 from kafka.serializer.abstract import Deserializer
 
-from piz_base import BooleanUtils, ClassUtils
+from piz_base import BooleanUtils, ClassUtils, JSONUtils
 from piz_component.kafka.consumer.enum import ConsumerModeEnum, KafkaCodeEnum
 from piz_component.kafka.consumer.consumer_i import IProcessAdapter, IOffsetProcessor
 from piz_component.kafka.kafka_e import KafkaException
@@ -42,7 +41,7 @@ class SequenceAdapter(IProcessAdapter):
                 logger.warning("consume:{} {}".format(bridge.get_id(), str(e)))
 
     def monitor(self):
-        return json.dumps({"STATUS": "activate", "MODE": str(self.mode), "ADAPTER": str(self.__class__)})
+        return JSONUtils.to_json({"STATUS": "activate", "MODE": str(self.mode), "ADAPTER": str(self.__class__)})
 
     def destroy(self, timeout=0):
         logger.info("adapter SequenceAdapter destroyed,timeout={}".format(timeout))
