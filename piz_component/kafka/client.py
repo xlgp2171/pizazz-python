@@ -1,7 +1,7 @@
 """"""
 import logging
 import threading
-from kafka import KafkaConsumer, KafkaProducer
+from kafka import KafkaConsumer, KafkaProducer, TopicPartition
 
 from piz_base import AssertUtils, SystemUtils, AbstractException
 from piz_component.kafka.consumer.consumer_i import IDataExecutor, IOffsetProcessor
@@ -23,7 +23,7 @@ class Subscription(AbstractClient):
         self.offset = None
         self.processor = None
 
-    def initialize(self, config):
+    def initialize(self, config: dict):
         from piz_component.kafka.consumer.plugin import OffsetProcessor
 
         AssertUtils.assert_type("initialize", config, dict)
@@ -43,14 +43,14 @@ class Subscription(AbstractClient):
         self.consumer = KafkaConsumer(**kafka_c)
         logger.info("subscription initialized,config={}".format(config))
 
-    def assign(self, partitions, executor):
+    def assign(self, partitions: list, executor: IDataExecutor):
         AssertUtils.assert_type("assign", partitions, dict)
         AssertUtils.assert_type("assign", executor, IDataExecutor)
         self._get_consumer().assign(partitions if partitions else self.get_convertor().assign_config())
         logger.info("subscription:assign")
         self._consume(executor)
 
-    def subscribe(self, executor, topics=(), pattern=None, listener=None):
+    def subscribe(self, executor: IDataExecutor, topics=(), pattern=None, listener=None):
         AssertUtils.assert_type("subscribe", executor, IDataExecutor)
         topics = topics if topics else self.get_convertor().topic_config()
 
@@ -128,7 +128,7 @@ class Production(AbstractClient):
         self.transaction = None
         self.processor = None
 
-    def initialize(self, config):
+    def initialize(self, config: dict):
         from piz_component.kafka.producer.plugin import TransactionProcessor
 
         AssertUtils.assert_type("initialize", config, dict)
@@ -174,7 +174,7 @@ class Production(AbstractClient):
         else:
             return self
 
-    def sent(self, record, callback=None):
+    def sent(self, record: dict, callback=None):
         AssertUtils.assert_type("sent", record, dict)
         AssertUtils.assert_key_in_dict("sent", record, "topic", "value")
         return self.processor.sent_data(self._get_producer(), record, callback)

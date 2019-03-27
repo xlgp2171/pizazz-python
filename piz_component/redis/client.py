@@ -12,7 +12,7 @@ class RedisClient(AbstractClassPlugin):
         super(RedisClient, self).__init__()
         self.adapter = None
 
-    def initialize(self, config):
+    def initialize(self, config: dict):
         from piz_component.redis.plugin import DefaultAdapter
 
         self._update_config(config)

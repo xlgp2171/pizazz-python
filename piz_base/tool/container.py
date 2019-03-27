@@ -5,16 +5,16 @@ import sys
 from concurrent import futures
 from concurrent.futures import TimeoutError
 
-from piz_base import RuntimeContext
+from piz_base.context import RuntimeContext
 from piz_base.base_e import AbstractException
 from piz_base.common.tool_utils import SystemUtils
 from piz_base.common.type_utils import NumberUtils
 
-from piz_base.base_i import IPlugin
+from piz_base.base_i import IPlugin, IMessageOutput
 
 
 class AbstractContainer(IPlugin):
-    def __init__(self, plugin, output):
+    def __init__(self, plugin: IPlugin, output: IMessageOutput):
         self._properties = {}
         self._plugin = plugin
         self._output = output
@@ -77,7 +77,7 @@ class AbstractContainer(IPlugin):
 
 
 class SocketContainer(AbstractContainer):
-    def __init__(self, plugin, config, output):
+    def __init__(self, plugin: IPlugin, config: dict, output: IMessageOutput):
         super(SocketContainer, self).__init__(plugin, output)
         try:
             self.initialize(config)
@@ -89,7 +89,7 @@ class SocketContainer(AbstractContainer):
         self.__closed = False
         self.lock = threading.Lock()
 
-    def initialize(self, config):
+    def initialize(self, config: dict):
         super(SocketContainer, self).initialize(config)
         host = config.get("host", "")
         port = NumberUtils.to_int(config.get("port", -1))
@@ -119,7 +119,7 @@ class SocketContainer(AbstractContainer):
 
     def _socket_waiting(self, port):
         # TODO 暂时没有实现socket组件
-        raise NotImplementedError("TODO :(")
+        raise AbstractException("TODO :(")
 
     def _command(self, data):
         if self.__command:

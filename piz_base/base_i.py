@@ -21,7 +21,7 @@ class ICloseable(object):
 
 class IPlugin(IObject, ICloseable):
     """ 插件接口 """
-    def initialize(self, config):
+    def initialize(self, config: dict):
         pass
 
 

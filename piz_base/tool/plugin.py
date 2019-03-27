@@ -13,10 +13,10 @@ class AbstractClassPlugin(IPlugin):
         self.lock = threading.Lock()
         self.configure = {}
 
-    def _log(self, msg, e=None):
+    def _log(self, msg: str, e=None):
         pass
 
-    def _set_config(self, config):
+    def _set_config(self, config: dict):
         if config:
             self.lock.acquire()
             try:
@@ -25,7 +25,7 @@ class AbstractClassPlugin(IPlugin):
                 self.lock.release()
         return self.configure
 
-    def _update_config(self, config):
+    def _update_config(self, config: dict):
         self.lock.acquire()
         self.configure.clear()
         self.lock.release()
@@ -38,11 +38,11 @@ class AbstractClassPlugin(IPlugin):
         return copy.deepcopy(self.configure)
 
     @classmethod
-    def cast(cls, plugin, clazz):
+    def cast(cls, plugin: IPlugin, clazz):
         AssertUtils.assert_not_null("cast", plugin, clazz)
         return ClassUtils.cast(plugin, clazz)
 
-    def load_plugin(self, key, def_plugin=None, initialize=True):
+    def load_plugin(self, key: str, def_plugin=None, initialize=True):
         classpath = self.configure.get(key, "")
         try:
             return self._load(classpath, key, def_plugin, initialize)
@@ -72,7 +72,7 @@ class AbstractClassPlugin(IPlugin):
             self._log("initializing plug-in {}".format(instance.get_id()))
             return instance
 
-    def unload_plugin(self, plugin, timeout=0):
+    def unload_plugin(self, plugin: IPlugin, timeout=0):
         if plugin:
             SystemUtils.destroy(plugin, timeout)
             self._log("unload plug-in {}".format(plugin.get_id()))

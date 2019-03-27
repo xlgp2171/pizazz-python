@@ -8,35 +8,35 @@ class IRedisAdapter(IPlugin):
 
 
 class IRedisProcessor(object):
-    def set(self, key, value):
+    def set(self, key: str, value: str):
         raise NotImplementedError("not supported 'set'")
 
-    def bset(self, key, value):
+    def bset(self, key: str, value: bytes):
         raise NotImplementedError("not supported 'bset'")
 
-    def hmset(self, key, set_map):
+    def hmset(self, key: str, set_map: dict):
         raise NotImplementedError("not supported 'hmset'")
 
-    def hset(self, key, field, value):
+    def hset(self, key: str, field: str, value: str):
         raise NotImplementedError("not supported 'hset'")
 
-    def get(self, key, encoding="UTF-8"):
+    def get(self, key: str, encoding="UTF-8"):
         raise NotImplementedError("not supported 'get'")
 
-    def bget(self, key):
+    def bget(self, key: str):
         raise NotImplementedError("not supported 'bget'")
 
-    def hget(self, key, field):
+    def hget(self, key: str, field: str):
         raise NotImplementedError("not supported 'hget'")
 
-    def hmget(self, key):
+    def hmget(self, key: str):
         raise NotImplementedError("not supported 'hmget'")
 
-    def hdel(self, key, field):
+    def hdel(self, key: str, field: str):
         raise NotImplementedError("not supported 'hdel'")
 
-    def delete(self, *key):
+    def delete(self, *key: str):
         raise NotImplementedError("not supported 'dele'")
 
-    def keys(self, pattern):
+    def keys(self, pattern: str):
         raise NotImplementedError("not supported 'keys'")

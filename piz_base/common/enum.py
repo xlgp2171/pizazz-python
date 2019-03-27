@@ -30,6 +30,6 @@ class OSTypeEnum(object):
     LINUX = _OSType("linux")
 
     @classmethod
-    def from_fn(cls, name):
+    def from_fn(cls, name: str):
         name = str(name).upper()
         return getattr(cls, name, _OSType(str(name)))

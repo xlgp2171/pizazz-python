@@ -32,7 +32,7 @@ class SystemUtils(object):
         return OSTypeEnum.from_fn(name).set(bit, version)
 
     @staticmethod
-    def destroy(target, timeout=0):
+    def destroy(target: ICloseable, timeout=0):
         if isinstance(target, ICloseable):
             try:
                 target.destroy(timeout)
@@ -40,7 +40,7 @@ class SystemUtils(object):
                 pass
 
     @staticmethod
-    def add_shutdown_hook(closeable, timeout=0, name=None):
+    def add_shutdown_hook(closeable: ICloseable, timeout=0, name: str=None):
         if isinstance(closeable, ICloseable):
             name = name if isinstance(name, str) else SystemUtils.new_uuid()
             return RuntimeContext.INSTANCE.add_shutdown_hook(name, lambda signum, frame: closeable.destroy(timeout))
@@ -88,12 +88,12 @@ class ClassUtils(object):
         return target
 
     @staticmethod
-    def new_class(classpath, set_type, name=None):
+    def new_class(classpath: str, set_type, name=None):
         cls = ClassUtils.load_class(classpath, name)
         return ClassUtils.new_and_cast(cls, set_type)
 
     @staticmethod
-    def load_class(classpath, name=None):
+    def load_class(classpath: str, name=None):
         AssertUtils.assert_not_null("load_class", classpath)
         pkg = None
         m_name = classpath

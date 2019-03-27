@@ -15,7 +15,7 @@ from piz_base.common.validate_utils import AssertUtils
 
 class IOUtils(object):
     @staticmethod
-    def get_resource_as_stream(resource, mode='r'):
+    def get_resource_as_stream(resource: str, mode='r'):
         AssertUtils.assert_not_null("get_resource_as_stream", resource)
         try:
             return open(
@@ -27,7 +27,7 @@ class IOUtils(object):
 
 class YAMLUtils(object):
     @staticmethod
-    def from_yaml(resource):
+    def from_yaml(resource: str):
         with IOUtils.get_resource_as_stream(resource) as f:
             try:
                 return yaml.safe_load(f.read())
@@ -58,12 +58,12 @@ class JSONUtils(object):
 
 class PathUtils(object):
     @staticmethod
-    def to_file_path(path, *paths):
+    def to_file_path(path: str, *paths: str):
         path = os.path.dirname(os.path.realpath(path))
         return os.path.join(path, *paths)
 
     @staticmethod
-    def to_uri(set_uri):
+    def to_uri(set_uri: str):
         AssertUtils.assert_not_null("to_uri", set_uri)
         uri_p = URI(set_uri)
         return uri_p if uri_p.scheme else URI(
@@ -71,7 +71,7 @@ class PathUtils(object):
             path=set_uri)
 
     @staticmethod
-    def resolve(set_uri, target):
+    def resolve(set_uri: URI, target: str):
         try:
             uri_s = str(set_uri)
             set_uri = PathUtils.to_uri(uri_s + ("" if uri_s.endswith("/") else "/"))
