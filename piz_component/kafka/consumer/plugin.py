@@ -17,7 +17,7 @@ logger = logging.getLogger(__name__)
 
 class SequenceAdapter(IProcessAdapter):
     def __init__(self):
-        self.mode = None
+        self.__mode = None
 
     def initialize(self, config):
         logger.info("adapter SequenceAdapter initialized,config={}".format(config))
@@ -25,7 +25,7 @@ class SequenceAdapter(IProcessAdapter):
     def set(self, mode):
         if not hasattr(ConsumerModeEnum, str(mode)):
             raise KafkaException(KafkaCodeEnum.KFK_0001, "adapter not support:{}".format(mode))
-        self.mode = mode
+        self.__mode = mode
 
     def accept(self, bridge, ignore):
         try:
@@ -41,7 +41,7 @@ class SequenceAdapter(IProcessAdapter):
                 logger.warning("consume:{} {}".format(bridge.get_id(), str(e)))
 
     def monitor(self):
-        return JSONUtils.to_json({"STATUS": "activate", "MODE": str(self.mode), "ADAPTER": str(self.__class__)})
+        return JSONUtils.to_json({"STATUS": "activate", "MODE": str(self.__mode), "ADAPTER": str(self.__class__)})
 
     def destroy(self, timeout=0):
         logger.info("adapter SequenceAdapter destroyed,timeout={}".format(timeout))
@@ -50,12 +50,12 @@ class SequenceAdapter(IProcessAdapter):
 class OffsetProcessor(IOffsetProcessor):
     def __init__(self):
         # {TopicPartition: OffsetAndMetadata}
-        self.offset_committed = {}
+        self._offset_committed = {}
         # {TopicPartition: OffsetAndMetadata}
-        self.offset_cache = {}
-        self.mode = None
-        self.ignore = None
-        self.lock = threading.Lock()
+        self._offset_cache = {}
+        self.__mode = None
+        self.__ignore = None
+        self.__lock = threading.Lock()
 
     def _callback(self, offsets, e):
         if e and isinstance(e, Exception):
@@ -67,22 +67,22 @@ class OffsetProcessor(IOffsetProcessor):
         # {TopicPartition: OffsetAndMetadata}
         tmp = self.get_offset_cache()
 
-        if self.mode.is_sync() or force:
+        if self.__mode.is_sync() or force:
             try:
-                if self.mode.is_each() and not force:
+                if self.__mode.is_each() and not force:
                     if tmp:
                         consumer.commit(tmp)
                 else:
                     consumer.commit()
             except Exception as e:
-                if self.ignore.offset_throwable():
+                if self.__ignore.offset_throwable():
                     raise KafkaException(KafkaCodeEnum.KFK_0006, "consumer commit:{} {}".format(tmp, str(e)))
                 else:
                     logger.warning("consumer commit:{} {}".format(tmp, str(e)))
                     return
             else:
                 self.__make_committed(tmp)
-        elif self.mode.is_each():
+        elif self.__mode.is_each():
             consumer.commit_async(tmp, lambda offset, set_e: self._callback(offset, set_e))
         else:
             consumer.commit_async(
@@ -90,50 +90,46 @@ class OffsetProcessor(IOffsetProcessor):
         logger.debug("consumer commit:{}".format(tmp))
 
     def __make_committed(self, offsets):
-        self.lock.acquire()
-        try:
+        with self.__lock.acquire():
             for k, v in offsets.items():
-                if k in self.offset_committed:
-                    if v.offset > self.offset_committed.get(k).offset:
-                        self.offset_committed[k] = v
+                if k in self._offset_committed:
+                    if v.offset > self._offset_committed.get(k).offset:
+                        self._offset_committed[k] = v
                 else:
-                    self.offset_committed[k] = v
-        finally:
-            self.lock.release()
+                    self._offset_committed[k] = v
         logger.debug("consumer mark committid:{}".format(offsets))
 
     def each(self, consumer, record):
         # tp = {"topic": record.topic, "partition": record.partition}
         tp = TopicPartition(record.topic, record.partition)
 
-        if tp in self.offset_committed:
-            if record.offset > self.offset_committed.get(tp).offset:
+        if tp in self._offset_committed:
+            if record.offset > self._offset_committed.get(tp).offset:
                 self.__set_and_commit(consumer, record, tp)
             logger.debug("{} consumed:{}".format(tp, record.offset))
         else:
             self.__set_and_commit(consumer, record, tp)
 
     def __set_and_commit(self, consumer, record, tp):
-        self.lock.acquire()
-        # self.offset_cache[tp] = {"offset": record.offset, "leaderEpoch": None, "metadata": ""}
-        self.offset_cache[tp] = OffsetAndMetadata(record.offset, "")
-        self.lock.release()
+        with self.__lock.acquire():
+            # self.offset_cache[tp] = {"offset": record.offset, "leaderEpoch": None, "metadata": ""}
+            self._offset_cache[tp] = OffsetAndMetadata(record.offset, "")
 
-        if self.mode != ConsumerModeEnum.MANUAL_NONE_NONE and not self.mode.is_auto() and self.mode.is_each():
+        if self.__mode != ConsumerModeEnum.MANUAL_NONE_NONE and not self.__mode.is_auto() and self.__mode.is_each():
             self.__offset_commit(consumer, False)
 
     def complete(self, consumer, e):
-        if self.mode != ConsumerModeEnum.MANUAL_NONE_NONE and not self.mode.is_auto() and not e:
+        if self.__mode != ConsumerModeEnum.MANUAL_NONE_NONE and not self.__mode.is_auto() and not e:
             self.__offset_commit(consumer, False)
-            logger.debug("consumer commit sync:{}".format(self.mode.is_sync()))
+            logger.debug("consumer commit sync:{}".format(self.__mode.is_sync()))
 
     def optimize_kafka_config(self, config):
-        commit_mode = True if not self.mode else self.mode.is_auto()
+        commit_mode = True if not self.__mode else self.__mode.is_auto()
 
         if "enable_auto_commit" not in config or (
-                self.mode and commit_mode != BooleanUtils.to_boolean(config["enable_auto_commit"], True)):
+                self.__mode and commit_mode != BooleanUtils.to_boolean(config["enable_auto_commit"], True)):
             config["enable_auto_commit"] = commit_mode
-            logger.info("set subscription config:enable_auto_commit={},mode={}".format(commit_mode, self.mode))
+            logger.info("set subscription config:enable_auto_commit={},mode={}".format(commit_mode, self.__mode))
         if "group_id" not in config or not config["group_id"]:
             config["group_id"] = "pizazz"
             logger.info("set subscription config:group_id=pizazz")
@@ -149,9 +145,9 @@ class OffsetProcessor(IOffsetProcessor):
         return config
 
     def get_rebalance_listener(self, consumer, listener):
-        mode = self.mode
-        lock = self.lock
-        offset_cache = self.offset_cache
+        mode = self.__mode
+        lock = self.__lock
+        offset_cache = self._offset_cache
         offset_commit_fn = self.__offset_commit
         rest_offset_committed_fn = self.rest_offset_committed
 
@@ -180,24 +176,18 @@ class OffsetProcessor(IOffsetProcessor):
         return ListenerCls()
 
     def get_offset_cache(self):
-        self.lock.acquire()
-        try:
-            return copy.copy(self.offset_cache)
-        finally:
-            self.lock.release()
+        with self.__lock.acquire():
+            return copy.copy(self._offset_cache)
 
     def rest_offset_committed(self):
-        self.lock.acquire()
-        try:
-            self.offset_committed.clear()
-        finally:
-            self.lock.release()
+        with self.__lock.acquire():
+            self._offset_committed.clear()
 
     def set(self, mode, ignore):
-        self.mode = mode
-        self.ignore = ignore
+        self.__mode = mode
+        self.__ignore = ignore
 
     def destroy(self, timeout=0):
         self.rest_offset_committed()
-        self.offset_cache.clear()
+        self._offset_cache.clear()
         logger.info("subscription offset processor destroyed,timeout={}".format(timeout))

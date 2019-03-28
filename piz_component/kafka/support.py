@@ -17,21 +17,21 @@ logger = logging.getLogger(__name__)
 class AbstractClient(AbstractClassPlugin):
     def __init__(self):
         super(AbstractClient, self).__init__()
-        self.initialized = False
-        self.convertor = None
+        self.__initialized = False
+        self.__convertor = None
 
     def initialize(self, config):
-        if self.initialized:
+        if self.__initialized:
             raise KafkaException(BasicCodeEnum.MSG_0020, "client initialized")
         else:
-            self.initialized = True
-        self.convertor = ConfigConvertor(config)
+            self.__initialized = True
+        self.__convertor = ConfigConvertor(config)
 
     def get_convertor(self):
-        return self.convertor
+        return self.__convertor
 
     def _is_initialize(self):
-        return self.initialized
+        return self.__initialized
 
     def _log(self, msg, e=None):
         if e and isinstance(e, AbstractException):
@@ -40,15 +40,15 @@ class AbstractClient(AbstractClassPlugin):
             logger.debug(msg)
 
     def destroy(self, timeout=0):
-        if self.initialized:
-            SystemUtils.destroy(self.convertor, timeout)
+        if self.__initialized:
+            SystemUtils.destroy(self.__convertor, timeout)
 
 
 class ConfigConvertor(ICloseable):
     def __init__(self, config):
         AssertUtils.assert_not_null("ConfigConvertor", config)
-        self.config = {}
-        self.template = None
+        self.__config = {}
+        self.__template = None
         self.__parse(config)
 
     def __parse(self, config):
@@ -58,23 +58,23 @@ class ConfigConvertor(ICloseable):
         client_c = client_c if client_c else {}
         config_c = config.get("config", {})
         config_c = config_c if config_c else {}
-        self.template = config.get("template", "")
+        self.__template = config.get("template", "")
         self.__try_use_template(client_c, config_c)
-        self.config = {"client": client_c, "config": config_c}
+        self.__config = {"client": client_c, "config": config_c}
 
     def __try_use_template(self, client_c, config_c):
-        if self.template:
-            ProducerTemplateEnum.from_fn(self.template).fill(client_c, config_c)
-            ConsumerTemplateEnum.from_fn(self.template).fill(client_c, config_c)
+        if self.__template:
+            ProducerTemplateEnum.from_fn(self.__template).fill(client_c, config_c)
+            ConsumerTemplateEnum.from_fn(self.__template).fill(client_c, config_c)
 
     def get_template(self):
-        return self.template
+        return self.__template
 
     def __get_config_nested(self, key, def_value):
-        return hr.get_nested(self.config, def_value, "config", key)
+        return hr.get_nested(self.__config, def_value, "config", key)
 
     def __get_client_nested(self, key, def_value):
-        return hr.get_nested(self.config, def_value, "client", key)
+        return hr.get_nested(self.__config, def_value, "client", key)
 
     def offset_processor_config(self):
         return self.__get_config_nested("offsetProcessor", {})
@@ -111,7 +111,7 @@ class ConfigConvertor(ICloseable):
         return ConsumerIgnoreEnum.NONE
 
     def kafka_config(self):
-        return self.config.get("client", {})
+        return self.__config.get("client", {})
 
     def get_consumer_group_id(self):
         return self.__get_client_nested("group_id", "pizazz")
@@ -152,7 +152,7 @@ class ConfigConvertor(ICloseable):
         return list(value)
 
     def destroy(self, timeout=0):
-        self.config.clear()
+        self.__config.clear()
 
 
 class RandomPartitioner(DefaultPartitioner):

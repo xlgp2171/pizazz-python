@@ -10,32 +10,28 @@ from piz_base.common.validate_utils import AssertUtils
 
 class AbstractClassPlugin(IPlugin):
     def __init__(self):
-        self.lock = threading.Lock()
-        self.configure = {}
+        self.__lock = threading.Lock()
+        self.__configure = {}
 
     def _log(self, msg: str, e=None):
         pass
 
     def _set_config(self, config: dict):
         if config:
-            self.lock.acquire()
-            try:
-                self.configure.update(config)
-            finally:
-                self.lock.release()
-        return self.configure
+            with self.__lock.acquire():
+                self.__configure.update(config)
+        return self.__configure
 
     def _update_config(self, config: dict):
-        self.lock.acquire()
-        self.configure.clear()
-        self.lock.release()
+        with self.__lock.acquire():
+            self.__configure.clear()
         self._set_config(config)
 
     def _get_config(self):
-        return self.configure
+        return self.__configure
 
     def _copy_config(self):
-        return copy.deepcopy(self.configure)
+        return copy.deepcopy(self.__configure)
 
     @classmethod
     def cast(cls, plugin: IPlugin, clazz):
@@ -43,7 +39,7 @@ class AbstractClassPlugin(IPlugin):
         return ClassUtils.cast(plugin, clazz)
 
     def load_plugin(self, key: str, def_plugin=None, initialize=True):
-        classpath = self.configure.get(key, "")
+        classpath = self.__configure.get(key, "")
         try:
             return self._load(classpath, key, def_plugin, initialize)
         except (AssertException, UtilityException) as e:

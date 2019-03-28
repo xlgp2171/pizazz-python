@@ -14,37 +14,37 @@ logger = logging.getLogger(__name__)
 
 class TransactionProcessor(ITransactionProcessor):
     def __init__(self):
-        self.mode = None
+        self.__mode = None
 
     def init_transactions(self, producer):
-        if self.mode.is_transaction():
+        if self.__mode.is_transaction():
             # Python版本不支持producer.init_transactions方法
             raise KafkaException(KafkaCodeEnum.KFK_0015, "{} not supported 'init_transactions'".format(__version__))
 
     def begin_transaction(self, producer):
-        if self.mode.is_transaction():
+        if self.__mode.is_transaction():
             # Python版本不支持producer.begin_transaction方法
             raise KafkaException(KafkaCodeEnum.KFK_0015, "{} not supported 'begin_transaction'".format(__version__))
 
     def commit_transaction(self, producer, offsets, group_id):
-        if self.mode.is_transaction():
+        if self.__mode.is_transaction():
             # Python版本不支持producer.commit_transaction方法
             raise KafkaException(KafkaCodeEnum.KFK_0015, "{} not supported 'commit_transaction'".format(__version__))
 
     def abort_transaction(self, producer):
-        if self.mode.is_transaction():
+        if self.__mode.is_transaction():
             # Python版本不支持producer.abort_transaction方法
             raise KafkaException(KafkaCodeEnum.KFK_0015, "{} not supported 'abort_transaction'".format(__version__))
 
     def set(self, mode):
-        self.mode = mode
+        self.__mode = mode
 
     def optimize_kafka_config(self, config):
-        transaction_mode = False if not self.mode else self.mode.is_transaction()
+        transaction_mode = False if not self.__mode else self.__mode.is_transaction()
 
         if transaction_mode and "transactional_id" not in config:
             config["transactional_id"] = "pizazz"
-            logger.info("set production config:transactional_id=pizazz,mode={}".format(self.mode))
+            logger.info("set production config:transactional_id=pizazz,mode={}".format(self.__mode))
         # Python版本新增功能：实例化KEY序列化类
         if "key_serializer" in config and isinstance(config["key_serializer"], str):
             config["key_serializer"] = ClassUtils.new_class(config["key_serializer"], Serializer)
@@ -59,6 +59,3 @@ class TransactionProcessor(ITransactionProcessor):
             logger.info("set production config:partitioner={}".format(config["partitioner"]))
 
         return config
-
-
-

@@ -42,8 +42,6 @@ class AbstractContainer(IPlugin):
         self._properties["timeout"] = os.getenv("piz.sc.timeout", 30000)
 
     def destroy(self, timeout=0):
-        status = 0
-
         if not timeout or timeout < 0:
             timeout = NumberUtils.to_int(self._properties["timeout"], 20000)
             timeout = timeout if timeout < 60000 else 20000
@@ -87,7 +85,7 @@ class SocketContainer(AbstractContainer):
         self.__hook = None
         self.__command = None
         self.__closed = False
-        self.lock = threading.Lock()
+        self.__lock = threading.Lock()
 
     def initialize(self, config: dict):
         super(SocketContainer, self).initialize(config)
@@ -119,7 +117,7 @@ class SocketContainer(AbstractContainer):
 
     def _socket_waiting(self, port):
         # TODO 暂时没有实现socket组件
-        raise AbstractException("TODO :(")
+        raise AbstractException("TODO", ":(")
 
     def _command(self, data):
         if self.__command:
@@ -139,7 +137,7 @@ class SocketContainer(AbstractContainer):
             self._output.write(msg)
 
     def destroy(self, timeout=0):
-        with self.lock.acquire():
+        with self.__lock.acquire():
             if not self.__closed:
                 self.__closed = True
 

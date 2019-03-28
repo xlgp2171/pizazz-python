@@ -6,18 +6,18 @@ from piz_component.kafka.kafka_e import KafkaCodeEnum, KafkaException
 
 class _ProducerMode(object):
     def __init__(self, name, sync, transaction):
-        self.name = name
-        self.sync = sync
-        self.transaction = transaction
+        self.__name = name
+        self.__sync = sync
+        self.__transaction = transaction
 
     def is_sync(self):
-        return self.sync
+        return self.__sync
 
     def is_transaction(self):
-        return self.transaction
+        return self.__transaction
 
     def __str__(self):
-        return self.name
+        return self.__name
 
 
 class ProducerModeEnum(object):
@@ -41,12 +41,12 @@ class ProducerModeEnum(object):
 
 class _ProducerTemplate(object):
     def __init__(self, name):
-        self.name = name
-        self.resource = PathUtils.to_file_path(__file__, "../", "resource", "{}.yml")
+        self.__name = name
+        self.__resource = PathUtils.to_file_path(__file__, "../", "resource", "{}.yml")
 
     def fill(self, client_c, config_c):
-        if self.name != ProducerTemplateEnum.NONE.name:
-            config = YAMLUtils.from_yaml(str(self.resource).format(self.name.lower()))
+        if self.__name != ProducerTemplateEnum.NONE.__name:
+            config = YAMLUtils.from_yaml(str(self.__resource).format(self.__name.lower()))
             hr.merge(config, "client", client_c)
             hr.merge(config, "config", config_c)
         return client_c, config_c

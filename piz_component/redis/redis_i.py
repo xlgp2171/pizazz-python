@@ -11,13 +11,13 @@ class IRedisProcessor(object):
     def set(self, key: str, value: str):
         raise NotImplementedError("not supported 'set'")
 
-    def bset(self, key: str, value: bytes):
+    def bset(self, key: str, value):
         raise NotImplementedError("not supported 'bset'")
 
     def hmset(self, key: str, set_map: dict):
         raise NotImplementedError("not supported 'hmset'")
 
-    def hset(self, key: str, field: str, value: str):
+    def hset(self, key: str, field: str, value):
         raise NotImplementedError("not supported 'hset'")
 
     def get(self, key: str, encoding="UTF-8"):

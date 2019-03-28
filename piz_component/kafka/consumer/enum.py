@@ -6,18 +6,18 @@ from piz_component.kafka.kafka_e import KafkaException, KafkaCodeEnum
 
 class _ConsumerIgnore(object):
     def __init__(self, name, offset, consume):
-        self.name = name
-        self.offset = offset
-        self.consume = consume
+        self.__name = name
+        self.__offset = offset
+        self.__consume = consume
 
     def offset_throwable(self):
-        return self.offset
+        return self.__offset
 
     def consume_throwable(self):
-        return self.consume
+        return self.__consume
 
     def __str__(self):
-        return self.name
+        return self.__name
 
 
 class ConsumerIgnoreEnum(object):
@@ -38,22 +38,22 @@ class ConsumerIgnoreEnum(object):
 
 class _ConsumerMode(object):
     def __init__(self, name, auto, sync, each):
-        self.name = name
-        self.auto = auto
-        self.sync = sync
-        self.each = each
+        self.__name = name
+        self.__auto = auto
+        self.__sync = sync
+        self.__each = each
 
     def is_auto(self):
-        return self.auto
+        return self.__auto
 
     def is_sync(self):
-        return self.sync
+        return self.__sync
 
     def is_each(self):
-        return self.each
+        return self.__each
 
     def __str__(self):
-        return self.name
+        return self.__name
 
 
 class ConsumerModeEnum(object):
@@ -81,12 +81,12 @@ class ConsumerModeEnum(object):
 
 class _ConsumerTemplate(object):
     def __init__(self, name):
-        self.name = name
-        self.resource = PathUtils.to_file_path(__file__, "../", "resource", "{}.yml")
+        self.__name = name
+        self.__resource = PathUtils.to_file_path(__file__, "../", "resource", "{}.yml")
 
     def fill(self, client_c, config_c):
-        if self.name != ConsumerTemplateEnum.NONE.name:
-            config = YAMLUtils.from_yaml(str(self.resource).format(self.name.lower()))
+        if self.__name != ConsumerTemplateEnum.NONE.__name:
+            config = YAMLUtils.from_yaml(str(self.__resource).format(self.__name.lower()))
             hr.merge(config, "client", client_c)
             hr.merge(config, "config", config_c)
         return client_c, config_c
