@@ -137,7 +137,7 @@ class SocketContainer(AbstractContainer):
             self._output.write(msg)
 
     def destroy(self, timeout=0):
-        with self.__lock.acquire():
+        with self.__lock:
             if not self.__closed:
                 self.__closed = True
 

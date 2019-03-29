@@ -40,6 +40,5 @@ __all__ = [
 # 初始化默认参数
 SystemUtils.LOCAL_ENCODING = SystemUtils.get_local_encoding()
 SystemUtils.LOCAL_OS = SystemUtils.get_local_os()
-SystemUtils.LOCAL_DIR = PathUtils.to_file_path(__file__, "../")
 #
 RuntimeContext.INSTANCE = RuntimeContext()

@@ -18,12 +18,12 @@ class AbstractClassPlugin(IPlugin):
 
     def _set_config(self, config: dict):
         if config:
-            with self.__lock.acquire():
+            with self.__lock:
                 self.__configure.update(config)
         return self.__configure
 
     def _update_config(self, config: dict):
-        with self.__lock.acquire():
+        with self.__lock:
             self.__configure.clear()
         self._set_config(config)
 

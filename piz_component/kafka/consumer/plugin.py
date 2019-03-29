@@ -90,7 +90,7 @@ class OffsetProcessor(IOffsetProcessor):
         logger.debug("consumer commit:{}".format(tmp))
 
     def __make_committed(self, offsets):
-        with self.__lock.acquire():
+        with self.__lock:
             for k, v in offsets.items():
                 if k in self._offset_committed:
                     if v.offset > self._offset_committed.get(k).offset:
@@ -111,7 +111,7 @@ class OffsetProcessor(IOffsetProcessor):
             self.__set_and_commit(consumer, record, tp)
 
     def __set_and_commit(self, consumer, record, tp):
-        with self.__lock.acquire():
+        with self.__lock:
             # self.offset_cache[tp] = {"offset": record.offset, "leaderEpoch": None, "metadata": ""}
             self._offset_cache[tp] = OffsetAndMetadata(record.offset, "")
 
@@ -164,11 +164,8 @@ class OffsetProcessor(IOffsetProcessor):
 
             def on_partitions_assigned(self, assigned):
                 rest_offset_committed_fn()
-                lock.acquire()
-                try:
+                with lock:
                     offset_cache.clear()
-                finally:
-                    lock.release()
                 if listener:
                     listener.on_partitions_assigned(assigned)
                 logger.info("subscription partitions assigned:{}".format(assigned))
@@ -176,11 +173,11 @@ class OffsetProcessor(IOffsetProcessor):
         return ListenerCls()
 
     def get_offset_cache(self):
-        with self.__lock.acquire():
+        with self.__lock:
             return copy.copy(self._offset_cache)
 
     def rest_offset_committed(self):
-        with self.__lock.acquire():
+        with self.__lock:
             self._offset_committed.clear()
 
     def set(self, mode, ignore):
