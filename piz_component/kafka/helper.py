@@ -3,7 +3,7 @@
 
 def merge(config, key, mix):
     tmp = config.get(key, {})
-    tmp = tmp if tmp else {}
+    tmp = tmp if tmp is not None else {}
     tmp.update(mix)
     mix.update(tmp)
 
@@ -17,4 +17,4 @@ def get_nested(config, def_value, *keys):
         else:
             break
 
-    return tmp if tmp else def_value
+    return tmp if tmp is not None else def_value

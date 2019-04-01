@@ -94,10 +94,10 @@ class SocketContainer(AbstractContainer):
         key = config.get("key", "")
         cmd_len = config.get("cmd.len", -1)
         self._properties["$host"] = host if host and isinstance(host, str) else os.getenv("piz.sc.host", "")
-        self._properties["$port"] = port if isinstance(port, int) and port > 0 else os.getenv("piz.sc.port", 14134)
+        self._properties["$port"] = port if isinstance(port, int) and port != -1 else os.getenv("piz.sc.port", 14134)
         self._properties["$key"] = key if key and isinstance(key, str) else os.getenv(
             "piz.sc.key", SystemUtils.new_uuid_simple())
-        self._properties["$cmd.len"] = cmd_len if isinstance(cmd_len, int) and cmd_len > 0 else os.getenv(
+        self._properties["$cmd.len"] = cmd_len if isinstance(cmd_len, int) and cmd_len != -1 else os.getenv(
             "piz.sc.cmd.len", 36)
 
     def get_id(self):

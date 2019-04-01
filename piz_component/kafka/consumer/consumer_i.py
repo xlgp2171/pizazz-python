@@ -1,4 +1,6 @@
 """"""
+from kafka.consumer.fetcher import ConsumerRecord
+
 from piz_base import IPlugin, IObject
 
 
@@ -29,7 +31,7 @@ class IDataExecutor(object):
     def begin(self):
         pass
 
-    def execute(self, record):
+    def execute(self, record: ConsumerRecord):
         raise NotImplementedError("not supported 'execute'")
 
     def end(self, offset):

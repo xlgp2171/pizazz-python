@@ -40,7 +40,7 @@ class SystemUtils(object):
                 pass
 
     @staticmethod
-    def add_shutdown_hook(closeable: ICloseable, timeout=0, name: str=None):
+    def add_shutdown_hook(closeable: ICloseable, timeout=0, name=None):
         if isinstance(closeable, ICloseable):
             name = name if isinstance(name, str) else SystemUtils.new_uuid()
             return RuntimeContext.INSTANCE.add_shutdown_hook(name, lambda signum, frame: closeable.destroy(timeout))
