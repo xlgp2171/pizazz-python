@@ -1,19 +1,20 @@
-""""""
+"""字典特征提取器，特征向量化"""
 import csv
-import pickle
 import numpy as np
 from sklearn.preprocessing import LabelEncoder
+from sklearn.model_selection import train_test_split
 from sklearn.feature_extraction import DictVectorizer
 from sklearn.svm import SVC
 
 from piz_base import PathUtils, IOUtils
+from piz_ml.skl import helper
 
 
 def read_dataset(resource):
     feature_list = []
     label_list = []
     path = PathUtils.to_file_path(__file__, "data", resource)
-    with IOUtils.get_resource_as_stream(path, "r") as f:
+    with IOUtils.get_resource_as_stream(path) as f:
         reader = csv.reader(f)
         headers = next(reader)
 
@@ -36,42 +37,62 @@ def train_and_test_data(feature_list, label_list):
     return train_data, train_label, test_data, test_label
 
 
-def dump(obj, resource):
-    path = PathUtils.to_file_path(__file__, "model", resource)
-    pickle.dump(obj, IOUtils.get_resource_as_stream(path, "wb"))
-
-
 def train_and_test(name):
     (feature_list, label_list) = read_dataset(name + ".csv")
-    (train_data, train_label, test_data, test_label) = train_and_test_data(feature_list, label_list)
-    print("{}\n{}".format(train_data[16], train_label[16]))
     # feature_list = feature_list[0:2]
+    # print(feature_list)
     # 字典向量生成器
     vec = DictVectorizer(
         sparse=False)
-    # 安装 转换
-    dummy_x = vec.fit_transform(train_data)
-    # 保存特征
-    dump(vec, name + "_data.sav")
+    # 转换
+    feature_list = vec.fit_transform(feature_list)
+    # print(feature_list)
+    # print(vec.get_feature_names())
+    helper.dump(vec, name + "_data.sav")
+    vec.get_feature_names()
     #
-    le = LabelEncoder()
-    dummy_y = le.fit_transform(train_label)
-    dump(le, name + "_label.sav")
+    # le = LabelEncoder()
+    # label_list = le.fit_transform(label_list)
+    # dump(le, name + "_label.sav")
     #
+    # (train_data, train_label, test_data, test_label) = train_and_test_data(feature_list, label_list)
+    (train_data, train_label, test_data, test_label) = train_test_split(
+        feature_list,
+        label_list,
+        test_size=0.3)
     svm = SVC(
         kernel='linear')
-    svm.fit(dummy_x, dummy_y)
-    dump(svm, name + "_model.sav")
+    svm.fit(train_data, train_label)
+    helper.dump(svm, name + "_model.sav")
     #
-    dummy_x2 = DictVectorizer(
-        sparse=False).fit_transform(test_data)
-    dummy_y2 = LabelEncoder().fit_transform(test_label)
-    result = svm.score(dummy_x2, dummy_y2)
+    # svm = load(name + "_model.sav")
+    result = svm.score(test_data, test_label)
+    print(result)
+
+
+def to_sample(name, target):
+    vec = helper.load(name + "_data.sav")
+    feature_names = vec.get_feature_names()
+    sample_source = [k + "=" + v for k, v in target.items()]
+    sample_test = np.zeros(len(feature_names))
+
+    for i in sample_source:
+        if i in feature_names:
+            sample_test[feature_names.index(i)] = 1.0
+    return sample_test
+
+
+def predict(name, target):
+    tmp = to_sample(name, target)
+    svm = helper.load(name + "_model.sav")
+    result = svm.predict([tmp])
     print(result)
 
 
 if __name__ == '__main__':
-    # set_svm: SVC =
-    train_and_test("sample01")
-    # result = svm.predict({'要求服务类型': '维修', '实际服务类型': '换机', '实际服务方式': '双程拉送', '对象码': '316', '对象': '电脑板', '故障现象码': '111', '故障原因码': 'NN', '维修措施编码': 'ZL', '维修措施': '换机'})
-    # print(result)
+    # 训练
+    # train_and_test("sample01")
+    sample = {'要求服务类型': '维修', '实际服务类型': '换机', '实际服务方式': '双程拉送', '对象码': '23D',
+              '对象': '观察窗总成', '故障现象码': '654', '故障原因码': 'B8', '维修措施编码': 'ZL', '维修措施': '换机'}
+    # 预测
+    predict("sample01", sample)
