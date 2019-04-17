@@ -12,6 +12,15 @@ class NumberUtils(object):
                 pass
         return def_value
 
+    @staticmethod
+    def to_float(target, def_value=0.0):
+        if target:
+            try:
+                return float(target)
+            except (TypeError, ValueError):
+                pass
+        return def_value
+
 
 class BooleanUtils(object):
     @staticmethod

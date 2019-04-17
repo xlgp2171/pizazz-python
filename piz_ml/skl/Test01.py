@@ -1,4 +1,4 @@
-"""字典特征提取器，特征向量化"""
+"""枚举分类，字典特征提取，特征向量化"""
 import csv
 import numpy as np
 from sklearn.preprocessing import LabelEncoder
@@ -28,13 +28,13 @@ def read_dataset(resource):
     return feature_list, label_list
 
 
-def train_and_test_data(feature_list, label_list):
-    size = int(0.7 * len(feature_list))
-    train_data = feature_list[:size]
-    train_label = label_list[:size]
-    test_data = feature_list[size:]
-    test_label = label_list[size:]
-    return train_data, train_label, test_data, test_label
+# def train_and_test_data(feature_list, label_list):
+#     size = int(0.7 * len(feature_list))
+#     train_data = feature_list[:size]
+#     train_label = label_list[:size]
+#     test_data = feature_list[size:]
+#     test_label = label_list[size:]
+#     return train_data, train_label, test_data, test_label
 
 
 def train_and_test(name):
@@ -51,12 +51,12 @@ def train_and_test(name):
     helper.dump(vec, name + "_data.sav")
     vec.get_feature_names()
     #
-    # le = LabelEncoder()
-    # label_list = le.fit_transform(label_list)
-    # dump(le, name + "_label.sav")
+    le = LabelEncoder()
+    label_list = le.fit_transform(label_list)
+    helper.dump(le, name + "_label.sav")
     #
     # (train_data, train_label, test_data, test_label) = train_and_test_data(feature_list, label_list)
-    (train_data, train_label, test_data, test_label) = train_test_split(
+    (train_data, test_data, train_label, test_label) = train_test_split(
         feature_list,
         label_list,
         test_size=0.3)
@@ -84,8 +84,10 @@ def to_sample(name, target):
 
 def predict(name, target):
     tmp = to_sample(name, target)
-    svm = helper.load(name + "_model.sav")
+    svm: SVC = helper.load(name + "_model.sav")
     result = svm.predict([tmp])
+    le: LabelEncoder = helper.load(name + "_label.sav")
+    result = le.inverse_transform(result)
     print(result)
 
 

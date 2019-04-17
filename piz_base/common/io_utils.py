@@ -16,12 +16,12 @@ from piz_base.common.validate_utils import AssertUtils
 
 class IOUtils(object):
     @staticmethod
-    def get_resource_as_stream(resource: str, mode='r'):
+    def get_resource_as_stream(resource: str, mode='r', **args):
         AssertUtils.assert_not_null("get_resource_as_stream", resource)
         try:
             return open(
                 resource,
-                mode=mode)
+                mode=mode, **args)
         except FileNotFoundError as e:
             raise UtilityException(BasicCodeEnum.MSG_0003, "unable to read file {} because: {}".format(resource, e))
 
@@ -209,5 +209,5 @@ class PathUtils(object):
     # Python版本方法，用于追加path
     @staticmethod
     def to_file_path(path: str, *paths: str):
-        path = os.path.dirname(os.path.realpath(path))
+        path = os.path.dirname(os.path.realpath(path)) if path else ""
         return os.path.join(path, *paths)
