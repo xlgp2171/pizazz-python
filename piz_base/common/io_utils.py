@@ -28,8 +28,8 @@ class IOUtils(object):
 
 class YAMLUtils(object):
     @staticmethod
-    def from_yaml(resource: str):
-        with IOUtils.get_resource_as_stream(resource) as f:
+    def from_yaml(resource: str, **args):
+        with IOUtils.get_resource_as_stream(resource, **args) as f:
             try:
                 return yaml.safe_load(f.read())
             except Exception as e:
@@ -211,3 +211,9 @@ class PathUtils(object):
     def to_file_path(path: str, *paths: str):
         path = os.path.dirname(os.path.realpath(path)) if path else ""
         return os.path.join(path, *paths)
+
+    # Python版本方法，用于获取文件夹名称
+    @staticmethod
+    def get_parent_name(path: str):
+        dir_name = os.path.dirname(path)
+        return os.path.basename(dir_name)
