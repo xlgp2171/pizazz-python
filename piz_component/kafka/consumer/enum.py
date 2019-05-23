@@ -1,5 +1,5 @@
 """"""
-import piz_component.kafka.helper as hr
+from piz_component.kafka import helper as hr
 from piz_base import YAMLUtils, PathUtils
 from piz_component.kafka.kafka_e import KafkaException, KafkaCodeEnum
 

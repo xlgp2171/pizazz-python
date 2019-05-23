@@ -4,7 +4,7 @@ import logging
 from kafka.partitioner import DefaultPartitioner
 from kafka.structs import TopicPartition
 
-import piz_component.kafka.helper as hr
+from piz_component.kafka import helper as hr
 from piz_base import (BasicCodeEnum, AbstractException, ICloseable, SystemUtils, NumberUtils, AssertUtils,
                       AbstractClassPlugin)
 from piz_component.kafka.consumer.enum import ConsumerTemplateEnum, ConsumerModeEnum, ConsumerIgnoreEnum
