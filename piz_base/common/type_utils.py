@@ -1,5 +1,10 @@
 """"""
 import time
+from datetime import datetime
+
+from piz_base.common.validate_utils import AssertUtils
+from piz_base.base_e import UtilityException, BasicCodeEnum
+from dateutil.relativedelta import relativedelta
 
 
 class NumberUtils(object):
@@ -34,12 +39,47 @@ class BooleanUtils(object):
 
 
 class DateUtils(object):
+    STANDARD_PATTERN = "%Y-%m-%d %H:%M:%S"
+
     # Python版本方法，类似System.currentTimeMillis()
     @staticmethod
     def current_time_millis():
         return int(round(time.time() * 1000))
 
+    @staticmethod
+    def parse(time_str: str, pattern: str = STANDARD_PATTERN):
+        AssertUtils.assert_not_null("parse", time_str, pattern)
+        try:
+            return datetime.strptime(time_str, pattern)
+        except ValueError:
+            raise UtilityException(BasicCodeEnum.MSG_0017,
+                                   "cannot parse datetime {} as format {}".format(time_str, pattern))
 
+    @staticmethod
+    def format(date: datetime, pattern: str = STANDARD_PATTERN):
+        AssertUtils.assert_not_null("format", date, pattern)
+        return date.strftime(pattern)
 
+    @staticmethod
+    def add_days(date: datetime, amount: int = 1):
+        if not date:
+            date = datetime.now()
+        return date + relativedelta(days=amount)
 
+    @staticmethod
+    def add_months(date: datetime, amount: int = 1):
+        if not date:
+            date = datetime.now()
+        return date + relativedelta(months=amount)
 
+    @staticmethod
+    def add_seconds(date: datetime, amount: int = 1):
+        if not date:
+            date = datetime.now()
+        return date + relativedelta(seconds=amount)
+
+    @staticmethod
+    def add_minutes(date: datetime, amount: int = 1):
+        if not date:
+            date = datetime.now()
+        return date + relativedelta(minutes=amount)

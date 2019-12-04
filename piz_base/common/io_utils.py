@@ -210,7 +210,8 @@ class PathUtils(object):
     @staticmethod
     def to_file_path(path: str, *paths: str):
         path = os.path.dirname(os.path.realpath(path)) if path else ""
-        return os.path.join(path, *paths)
+        path = os.path.join(path, *paths)
+        return os.path.realpath(path)
 
     # Python版本方法，用于获取文件夹名称
     @staticmethod
