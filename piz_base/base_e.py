@@ -1,4 +1,6 @@
-""""""
+""" 异常类
+
+"""
 
 
 class BasicCodeEnum(object):
@@ -50,10 +52,26 @@ class BasicCodeEnum(object):
     MSG_0022 = "MSG0022#"
     # 参数无法找到异常: ArgumentNotFoundException
     MSG_0023 = "MSG0023#"
+    # 解析异常: ParseException
+    MSG_0024 = "MSG0024#"
+    # 超时异常: TimeoutException
+    MSG_0025 = "MSG0025#"
+    # 数据匹配异常: MatchException
+    MSG_0026 = "MSG0026#"
+    # 查找目标无法找到异常: TargetNotFoundException
+    MSG_0027 = "MSG0027#"
+    # 格式转换异常: FormatException
+    MSG_0028 = "MSG0028#"
+    # 第三方组件连接异常: ConnectionException
+    MSG_0029 = "MSG0029#"
+    # 方法调用异常: MethodInvokeException
+    MSG_0030 = "MSG0030#"
+    # 状态异常: StateException
+    MSG_0031 = "MSG0031#"
 
 
-class AbstractException(Exception):
-    """ 异常超类 """
+class BaseRuntimeException(Exception):
+    """ 异常基类 """
     def __init__(self, code, msg):
         self.code = code
         self.msg = msg
@@ -65,19 +83,25 @@ class AbstractException(Exception):
         return self.get_message()
 
 
-class AssertException(AbstractException):
-    """ 断言异常 """
+class ValidateException(BaseRuntimeException):
+    """ 验证异常 """
     def __init__(self, code, msg):
-        super(AssertException, self).__init__(code, msg)
+        super(ValidateException, self).__init__(code, msg)
 
 
-class UtilityException(AbstractException):
+class IllegalException(BaseRuntimeException):
+    """ 非法参数数据异常 """
+    def __init__(self, code, msg):
+        super(IllegalException, self).__init__(code, msg)
+
+
+class UtilityException(BaseRuntimeException):
     """ 通用工具异常 """
     def __init__(self, code, msg):
         super(UtilityException, self).__init__(code, msg)
 
 
-class ToolException(AbstractException):
+class ToolException(BaseRuntimeException):
     """ 通用组件异常 """
     def __init__(self, code, msg):
         super(ToolException, self).__init__(code, msg)

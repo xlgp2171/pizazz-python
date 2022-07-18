@@ -1,9 +1,12 @@
-""""""
+""" 类型转换辅助类
+
+"""
+
 import time
 from datetime import datetime
 
-from piz_base.common.validate_utils import AssertUtils
-from piz_base.base_e import UtilityException, BasicCodeEnum
+from piz_base.common.validate_utils import ValidateUtils
+from piz_base.base_e import BasicCodeEnum, IllegalException
 from dateutil.relativedelta import relativedelta
 
 
@@ -48,16 +51,16 @@ class DateUtils(object):
 
     @staticmethod
     def parse(time_str: str, pattern: str = STANDARD_PATTERN):
-        AssertUtils.assert_not_null("parse", time_str, pattern)
+        ValidateUtils.not_null("parse", time_str, pattern)
         try:
             return datetime.strptime(time_str, pattern)
         except ValueError:
-            raise UtilityException(BasicCodeEnum.MSG_0017,
+            raise IllegalException(BasicCodeEnum.MSG_0017,
                                    "cannot parse datetime {} as format {}".format(time_str, pattern))
 
     @staticmethod
     def format(date: datetime, pattern: str = STANDARD_PATTERN):
-        AssertUtils.assert_not_null("format", date, pattern)
+        ValidateUtils.not_null("format", date, pattern)
         return date.strftime(pattern)
 
     @staticmethod

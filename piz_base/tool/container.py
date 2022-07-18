@@ -2,27 +2,28 @@
 import threading
 import os
 import sys
+import traceback
 from concurrent import futures
 from concurrent.futures import TimeoutError
 
 from piz_base.context import RuntimeContext
-from piz_base.base_e import AbstractException
+from piz_base.base_e import ToolException
 from piz_base.common.tool_utils import SystemUtils
 from piz_base.common.type_utils import NumberUtils
 
-from piz_base.base_i import IPlugin, IMessageOutput
+from piz_base.base_i import IPlugin, IMessageOutput, IRunnable
 
 
 class AbstractContainer(IPlugin):
-    def __init__(self, plugin: IPlugin, output: IMessageOutput):
+    def __init__(self, runnable: IRunnable, output: IMessageOutput):
         self._properties = {}
-        self._plugin = plugin
+        self._runnable = runnable
         self._output = output
         self._event = threading.Event()
 
-    def __callable(self, timeout):
+    def _callable(self):
         try:
-            self._plugin.destroy(timeout)
+            self._runnable.destroy(0)
         except Exception as e:
             self._output.throw_exception(e)
             return -1
@@ -41,49 +42,54 @@ class AbstractContainer(IPlugin):
     def initialize(self, config):
         self._properties["timeout"] = os.getenv("piz.sc.timeout", 30000)
 
+    # noinspection PyUnresolvedReferences,PyProtectedMember
     def destroy(self, timeout=0):
         if not timeout or timeout < 0:
             timeout = NumberUtils.to_int(self._properties["timeout"], 20000)
             timeout = timeout if timeout < 60000 else 20000
         if timeout == 0:
             msg = "immediate container destruction"
-            print(msg)
+            print(msg, file=sys.stderr)
             self.log(msg)
-            status = self.__callable(0)
+            status = self._callable()
         else:
             msg = "container destroyed in {}ms".format(timeout)
-            print(msg)
+            print(msg, file=sys.stderr)
             self.log(msg)
+            pool = None
             try:
-                status = futures.ThreadPoolExecutor(1).submit(lambda: self.__callable(timeout)).result(timeout / 1000)
+                pool = futures.ThreadPoolExecutor(1)
+                status = pool.submit(lambda: self._callable()).result(timeout / 1000)
             except TimeoutError as e:
                 msg = "container cannot stop within {}ms".format(timeout)
-                print(msg)
+                print(msg, file=sys.stderr)
                 self.log(msg, e)
                 status = -2
             except Exception as e:
                 status = -3
-                print(e)
                 self._output.throw_exception(e)
+                traceback.print_exc(limit=10)
                 # 强制退出
                 os._exit(status)
             finally:
                 SystemUtils.destroy(self._output)
+
+                if pool:
+                    pool.shutdown(wait=False)
 
         if status != -3:
             sys.exit(status)
 
 
 class SocketContainer(AbstractContainer):
-    def __init__(self, plugin: IPlugin, config: dict, output: IMessageOutput):
-        super(SocketContainer, self).__init__(plugin, output)
+    def __init__(self, runnable: IRunnable, config: dict, output: IMessageOutput):
+        super(SocketContainer, self).__init__(runnable, output)
         try:
             self.initialize(config)
-        except AbstractException as e:
-            self._output.throw_exception(e)
+        except ToolException as e:
+            super()._output.throw_exception(e)
         self.__socket = None
         self.__hook = None
-        self.__command = None
         self.__closed = False
         self.__lock = threading.Lock()
 
@@ -117,23 +123,10 @@ class SocketContainer(AbstractContainer):
 
     def _socket_waiting(self, port):
         # TODO 暂时没有实现socket组件
-        raise AbstractException("TODO", ":(")
-
-    def _command(self, data):
-        if self.__command:
-            try:
-                self.__command.write(data)
-            except Exception as e:
-                self._output.throw_exception(e)
-
-        return data
-
-    def set_command(self, command):
-        self.__command = command
-        return self
+        raise NotImplementedError("TODO:(")
 
     def log(self, msg, e=None):
-        if self._output.is_enable():
+        if self._output.is_enable() or e:
             self._output.write(msg)
 
     def destroy(self, timeout=0):

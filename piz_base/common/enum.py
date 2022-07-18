@@ -1,4 +1,6 @@
-""""""
+""" 操作系统枚举
+
+"""
 
 
 class _OSType(object):

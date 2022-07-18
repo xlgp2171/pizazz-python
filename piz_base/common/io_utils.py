@@ -1,4 +1,7 @@
-""""""
+""" 输入输出辅助类
+
+"""
+
 import yaml
 import uri
 import os
@@ -10,14 +13,14 @@ from urllib import parse
 from uri import URI
 
 from piz_base.common.tool_utils import SystemUtils
-from piz_base.base_e import AssertException, UtilityException, BasicCodeEnum
-from piz_base.common.validate_utils import AssertUtils
+from piz_base.base_e import ValidateException, UtilityException, BasicCodeEnum, IllegalException
+from piz_base.common.validate_utils import ValidateUtils
 
 
 class IOUtils(object):
     @staticmethod
     def get_resource_as_stream(resource: str, mode='r', **args):
-        AssertUtils.assert_not_null("get_resource_as_stream", resource)
+        ValidateUtils.not_null("get_resource_as_stream", resource)
         try:
             return open(
                 resource,
@@ -35,19 +38,35 @@ class YAMLUtils(object):
             except Exception as e:
                 raise UtilityException(BasicCodeEnum.MSG_0013, "yaml could not parse because:{}".format(e))
 
+    @staticmethod
+    def to_yaml(resource: str, data: dict, **args):
+        with IOUtils.get_resource_as_stream(
+                resource,
+                mode='w', **args) as f:
+            try:
+                return yaml.safe_dump(data, f)
+            except Exception as e:
+                raise UtilityException(BasicCodeEnum.MSG_0013, "yaml could not to file because:{}".format(e))
+
 
 class JSONUtils(object):
     @staticmethod
     def to_json(target, encode=None):
-        return json.dumps(
-            target,
-            default=encode)
+        try:
+            return json.dumps(
+                target,
+                default=encode)
+        except Exception as e:
+            raise IllegalException(BasicCodeEnum.MSG_0013, "json could not parse because: {}".format(e))
 
     @staticmethod
     def from_json(target, decode=None, clazz=None):
-        tmp = json.loads(
-            target,
-            object_hook=decode)
+        try:
+            tmp = json.loads(
+                target,
+                object_hook=decode)
+        except Exception as e:
+            raise IllegalException(BasicCodeEnum.MSG_0013, "json could not parse because: {}".format(e))
 
         if clazz and tmp:
             obj = clazz()
@@ -60,7 +79,7 @@ class JSONUtils(object):
 class PathUtils(object):
     @staticmethod
     def to_byte_array(path: str):
-        AssertUtils.assert_not_null("to_byte_array", path)
+        ValidateUtils.not_null("to_byte_array", path)
         try:
             with open(
                     file=path,
@@ -72,7 +91,7 @@ class PathUtils(object):
 
     @staticmethod
     def delete(path: str, deep=True):
-        AssertUtils.assert_not_null("delete", path)
+        ValidateUtils.not_null("delete", path)
 
         if os.path.isdir(path):
             if deep:
@@ -90,6 +109,7 @@ class PathUtils(object):
                 PathUtils._delete(os.path.join(root, name), True)
 
     # Python版本方法，用于删除文件或文件夹
+    # noinspection PyBroadException
     @staticmethod
     def _delete(path, is_dir):
         try:
@@ -103,7 +123,7 @@ class PathUtils(object):
 
     @staticmethod
     def copy_to_path(path: str, set_in, mode="wb", replace=True):
-        AssertUtils.assert_not_null("copy_to_path", path, set_in)
+        ValidateUtils.not_null("copy_to_path", path, set_in)
 
         if replace and os.path.exists(path):
             PathUtils.delete(path, False)
@@ -120,7 +140,7 @@ class PathUtils(object):
 
     @staticmethod
     def copy_to_temp(data: bytes, prefix: str, call_fn=None):
-        AssertUtils.assert_not_null("copy_to_temp", data)
+        ValidateUtils.not_null("copy_to_temp", data)
         delete = True if call_fn else False
 
         with tempfile.NamedTemporaryFile(
@@ -134,8 +154,8 @@ class PathUtils(object):
             return temp.name
 
     @staticmethod
-    def list_paths(path: str, set_filter=None, include_dir=False):
-        AssertUtils.assert_not_null("list_paths", path)
+    def walk_paths(path: str, set_filter=None, include_dir=False):
+        ValidateUtils.not_null("list_paths", path)
 
         def def_filter_fn(target):
             return True if target else False
@@ -161,7 +181,7 @@ class PathUtils(object):
     # 需要自行修改为file:///C:/tmp/user，或者采用scheme传参方式"C:/tmp/user", "file"
     @staticmethod
     def to_uri(set_uri: str, scheme=None):
-        AssertUtils.assert_not_null("to_uri", set_uri)
+        ValidateUtils.not_null("to_uri", set_uri)
 
         if scheme:
             if not set_uri.startswith("/"):
@@ -180,7 +200,7 @@ class PathUtils(object):
         try:
             uri_s = str(set_uri)
             set_uri = PathUtils.to_uri(uri_s + ("" if uri_s.endswith("/") else "/"))
-        except AssertException:
+        except ValidateException:
             return uri
         else:
             target = parse.quote(

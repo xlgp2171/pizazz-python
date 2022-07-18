@@ -1,10 +1,17 @@
-""""""
+""" 基础接口
+
+"""
+from piz_base.base_e import BaseRuntimeException
 
 
 class IObject(object):
     """ 对象接口 """
     def get_id(self):
         return id(self)
+
+    @classmethod
+    def is_empty(cls):
+        return False
 
 
 class ICloseable(object):
@@ -25,8 +32,35 @@ class IPlugin(IObject, ICloseable):
         pass
 
 
+class IRunnable(ICloseable):
+    """ 运行方法 """
+    def run(self):
+        try:
+            self.activate()
+        except Exception as e:
+            if self.throwable():
+                raise BaseRuntimeException("", str(e))
+            else:
+                self.throw_exception(e)
+        finally:
+            self.complete()
+
+    def activate(self):
+        raise NotImplementedError("not supported 'activate'")
+
+    def complete(self):
+        pass
+
+    def throw_exception(self, e):
+        pass
+
+    @classmethod
+    def throwable(cls):
+        return False
+
+
 # Python版本接口，用于规范json序列化和反序列化自定义对象
-class IJSON(object):
+class IJson(object):
     """JSON的序列化和反序列化接口"""
     @classmethod
     def to_json(cls, target):

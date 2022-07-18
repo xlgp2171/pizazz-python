@@ -1,4 +1,7 @@
-""""""
+""" 工具辅助类
+
+"""
+
 import sys
 import os
 import platform
@@ -9,9 +12,9 @@ import uuid
 
 from piz_base.context import RuntimeContext
 from piz_base.base_i import ICloseable
-from piz_base.base_e import UtilityException, BasicCodeEnum
+from piz_base.base_e import BasicCodeEnum, IllegalException
 from piz_base.common.enum import OSTypeEnum
-from piz_base.common.validate_utils import AssertUtils
+from piz_base.common.validate_utils import ValidateUtils
 
 
 class SystemUtils(object):
@@ -31,6 +34,7 @@ class SystemUtils(object):
         version = platform.platform()
         return OSTypeEnum.from_fn(name).set(bit, version)
 
+    # noinspection PyBroadException
     @staticmethod
     def destroy(target: ICloseable, timeout=0):
         if isinstance(target, ICloseable):
@@ -42,7 +46,7 @@ class SystemUtils(object):
     @staticmethod
     def add_shutdown_hook(closeable: ICloseable, timeout=0, name=None):
         if isinstance(closeable, ICloseable):
-            name = name if isinstance(name, str) else SystemUtils.new_uuid()
+            name = name if isinstance(name, str) else SystemUtils.new_uuid_simple()
             return RuntimeContext.INSTANCE.add_shutdown_hook(name, lambda signum, frame: closeable.destroy(timeout))
         else:
             return None
@@ -57,13 +61,13 @@ class SystemUtils(object):
 
     # Python版本方法，用于结束线程
     @staticmethod
-    def async_raise(tid, exctype):
+    def async_raise(tid, exec_type):
         """raises the exception, performs cleanup if needed"""
         tid = ctypes.c_long(tid)
 
-        if not inspect.isclass(exctype):
-            exctype = type(exctype)
-        res = ctypes.pythonapi.PyThreadState_SetAsyncExc(tid, ctypes.py_object(exctype))
+        if not inspect.isclass(exec_type):
+            exec_type = type(exec_type)
+        res = ctypes.pythonapi.PyThreadState_SetAsyncExc(tid, ctypes.py_object(exec_type))
 
         if res == 0:
             pass
@@ -79,11 +83,11 @@ class ClassUtils(object):
     def cast(target, set_type):
         if not set_type:
             return None
-        AssertUtils.assert_not_null("cast", target)
+        ValidateUtils.not_null("cast", target)
 
         if not isinstance(target, set_type):
             msg = "class {} needs to implement class or interface {}".format(target, set_type)
-            raise UtilityException(BasicCodeEnum.MSG_0004, msg)
+            raise IllegalException(BasicCodeEnum.MSG_0004, msg)
 
         return target
 
@@ -94,7 +98,7 @@ class ClassUtils(object):
 
     @staticmethod
     def load_class(classpath: str, name=None):
-        AssertUtils.assert_not_null("load_class", classpath)
+        ValidateUtils.not_null("load_class", classpath)
         pkg = None
         m_name = classpath
         c_name = name
@@ -120,5 +124,5 @@ class ClassUtils(object):
     def new_and_cast(clazz, set_type):
         if not set_type:
             return None
-        AssertUtils.assert_not_null("new_and_cast", clazz)
+        ValidateUtils.not_null("new_and_cast", clazz)
         return ClassUtils.cast(clazz(), set_type)

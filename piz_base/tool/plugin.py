@@ -1,48 +1,52 @@
-""""""
+""" 类加载器工具
+
+"""
+
 import threading
 import copy
 
-from piz_base.base_i import IPlugin
-from piz_base.base_e import AbstractException, ToolException, BasicCodeEnum, AssertException, UtilityException
+from piz_base.base_i import IPlugin, IObject
+from piz_base.base_e import ToolException, BasicCodeEnum, ValidateException, UtilityException, BaseRuntimeException
 from piz_base.common.tool_utils import SystemUtils, ClassUtils
-from piz_base.common.validate_utils import AssertUtils
+from piz_base.common.validate_utils import ValidateUtils
 
 
-class AbstractClassPlugin(IPlugin):
+class AbstractClassPlugin(IObject):
     def __init__(self):
-        self.__lock = threading.Lock()
-        self.__configure = {}
+        self._lock = threading.Lock()
+        self._configure = {}
 
     def _log(self, msg: str, e=None):
         pass
 
     def _set_config(self, config: dict):
         if config:
-            with self.__lock:
-                self.__configure.update(config)
-        return self.__configure
+            with self._lock:
+                self._configure.update(config)
+        return self._configure
 
     def _update_config(self, config: dict):
-        with self.__lock:
-            self.__configure.clear()
+        with self._lock:
+            self._configure.clear()
         self._set_config(config)
 
-    def _get_config(self):
-        return self.__configure
+    def get_config(self):
+        return self._configure
 
+    # Python版本方法，用于复制配置
     def _copy_config(self):
-        return copy.deepcopy(self.__configure)
+        return copy.deepcopy(self._configure)
 
     @classmethod
     def cast(cls, plugin: IPlugin, clazz):
-        AssertUtils.assert_not_null("cast", plugin, clazz)
+        ValidateUtils.not_null("cast", plugin, clazz)
         return ClassUtils.cast(plugin, clazz)
 
     def load_plugin(self, key: str, def_plugin=None, initialize=True):
-        classpath = self.__configure.get(key, "")
+        classpath = self._configure.get(key, "")
         try:
             return self._load(classpath, key, def_plugin, initialize)
-        except (AssertException, UtilityException) as e:
+        except (ValidateException, UtilityException) as e:
             self._log(e.get_message(), e)
             return self._load("", key, def_plugin, initialize, e)
 
@@ -62,7 +66,7 @@ class AbstractClassPlugin(IPlugin):
     def _init_plugin(self, instance):
         try:
             instance.initialize(self._copy_config())
-        except AbstractException as e:
+        except BaseRuntimeException as e:
             raise ToolException(BasicCodeEnum.MSG_0020, e.get_message())
         else:
             self._log("initializing plug-in {}".format(instance.get_id()))
