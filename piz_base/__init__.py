@@ -4,6 +4,7 @@ from piz_base.common.enum import OSTypeEnum
 from piz_base.common.io_utils import IOUtils, YAMLUtils, PathUtils, JSONUtils
 from piz_base.common.tool_utils import SystemUtils, ClassUtils
 from piz_base.common.type_utils import NumberUtils, BooleanUtils, DateUtils
+from piz_base.common.validate_utils import ValidateUtils
 from piz_base.context import RuntimeContext
 from piz_base.tool.container import SocketContainer
 from piz_base.tool.plugin import AbstractClassPlugin
@@ -21,6 +22,7 @@ __all__ = [
     'NumberUtils',
     'BooleanUtils',
     'DateUtils',
+    'ValidateUtils',
     'RuntimeContext',
     'SocketContainer',
     'AbstractClassPlugin',

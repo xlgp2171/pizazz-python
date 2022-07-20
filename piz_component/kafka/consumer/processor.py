@@ -1,65 +1,82 @@
-""""""
+""" 订阅处理类
+
+"""
 import logging
 
-from piz_base import AbstractClassPlugin, AbstractException
+from piz_base import AbstractClassPlugin, ICloseable
+from piz_base.base_e import BaseRuntimeException
 from piz_component.kafka.consumer.consumer_i import IProcessAdapter, IBridge
 
 logger = logging.getLogger(__name__)
 
 
-class DataProcessor(AbstractClassPlugin):
-    def __init__(self, offset, mode, ignore):
-        super(DataProcessor, self).__init__()
-        self.__offset = offset
-        self.__mode = mode
-        self.__ignore = ignore
-        self.__adapter = None
+class DataProcessor(AbstractClassPlugin, ICloseable):
+    def __init__(self, offset, mode, ignore, config):
+        super(DataProcessor, self).__init__(config)
+        self._offset = offset
+        self._ignore = ignore
+        self._adapter: IProcessAdapter = self._load_adapter(mode)
 
-    def initialize(self, config):
+    def _load_adapter(self, mode):
         from piz_component.kafka.consumer.plugin import SequenceAdapter
 
-        self._set_config(config)
         ins = self.load_plugin("classpath", SequenceAdapter(), True)
-        self.__adapter = self.cast(ins, IProcessAdapter)
-        self.__adapter.set(self.__mode)
+        adapter = self.cast(ins, IProcessAdapter)
+        adapter.set(mode)
         logger.info("subscription data processor initialized,config={}".format(config))
+        return adapter
 
     def optimize_kafka_config(self, kafka_config):
-        return kafka_config if self.__mode else kafka_config
+        return kafka_config if self._ignore else kafka_config
 
-    def consume_ready(self, consumer, executor):
-        if consumer and self.__mode:
-            executor.begin()
+    def consume_ready(self, consumer, impl, count):
+        if consumer and self._ignore:
+            impl.begin(count)
 
-    def consume(self, consumer, record, executor):
-        offset = self.__offset
+    def consume_multi(self, consumer, records, impl):
+        offset = self._offset
 
         class BridgeCls(IBridge):
             def get_id(self):
-                return "{}#{}#{}#{}".format(record.topic, record.partition, record.offset, record.timestamp)
+                return "MD{}".format(len(records))
 
             def passing(self):
-                executor.execute(record)
+                logger.debug("receive multi data: ".format(len(records)))
+                impl.execute(records)
+                offset.batch(consumer, records)
+
+        self._adapter.accept(BridgeCls(), self._ignore)
+
+    def consume_single(self, consumer, record, impl):
+        offset = self._offset
+
+        class BridgeCls(IBridge):
+            def get_id(self):
+                return "SD#{}#{}#{}#{}".format(record.topic, record.partition, record.offset, record.timestamp)
+
+            def passing(self):
+                logger.debug("receive single data")
+                impl.execute(record)
                 offset.each(consumer, record)
 
-        self.__adapter.accept(BridgeCls(), self.__ignore)
+        self._adapter.accept(BridgeCls(), self._ignore)
 
     def consume_complete(self, consumer, executor, e=None):
         if e:
             executor.throw_exception(e)
         else:
-            executor.end(self.__offset)
-        self.__offset.complete(consumer, e)
+            executor.end(self._offset)
+        self._offset.complete(consumer, e)
 
-    def monitor(self):
-        return self.__adapter.monitor()
+    def report(self):
+        return self._adapter.report()
 
     def _log(self, msg, e=None):
-        if e and isinstance(e, AbstractException):
+        if e and isinstance(e, BaseRuntimeException):
             logger.error(e.get_message())
         else:
             logger.debug(msg)
 
     def destroy(self, timeout=0):
-        self.unload_plugin(self.__adapter, timeout)
+        self.unload_plugin(self._adapter, timeout)
         logger.info("subscription data processor destroyed,timeout={}".format(timeout))

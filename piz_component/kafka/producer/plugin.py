@@ -1,4 +1,6 @@
-""""""
+""" 事务实现
+
+"""
 import logging
 
 from kafka.serializer.abstract import Serializer

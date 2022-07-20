@@ -7,7 +7,7 @@ config:
   mode: MANUAL_ASYNC_ROUND
   ignore: OFFSET
   duration: 3000
-  offsetProcessor:
+  offset-processor:
     classpath: piz_component.kafka.consumer.plugin.OffsetProcessor
-  dataProcessor:
+  data-processor:
     classpath: piz_component.kafka.consumer.plugin.SequenceAdapter

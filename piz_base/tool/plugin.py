@@ -12,9 +12,9 @@ from piz_base.common.validate_utils import ValidateUtils
 
 
 class AbstractClassPlugin(IObject):
-    def __init__(self):
+    def __init__(self, configure=None):
         self._lock = threading.Lock()
-        self._configure = {}
+        self._configure = configure if isinstance(configure, dict) else {}
 
     def _log(self, msg: str, e=None):
         pass

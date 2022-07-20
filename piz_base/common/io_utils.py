@@ -3,17 +3,11 @@
 """
 
 import yaml
-import uri
 import os
 import json
 import tempfile
 
-from urllib import parse
-
-from uri import URI
-
-from piz_base.common.tool_utils import SystemUtils
-from piz_base.base_e import ValidateException, UtilityException, BasicCodeEnum, IllegalException
+from piz_base.base_e import UtilityException, BasicCodeEnum, IllegalException
 from piz_base.common.validate_utils import ValidateUtils
 
 
@@ -121,22 +115,20 @@ class PathUtils(object):
         except Exception:
             return False
 
+    # noinspection PyTypeChecker
     @staticmethod
-    def copy_to_path(path: str, set_in, mode="wb", replace=True):
-        ValidateUtils.not_null("copy_to_path", path, set_in)
+    def copy_to_path(data: bytes, path: str, mode="wb", replace=True):
+        ValidateUtils.not_null("copy_to_path", path, data)
 
         if replace and os.path.exists(path):
             PathUtils.delete(path, False)
         try:
             with open(path, mode) as out:
-                data = set_in.read()
                 out.write(data)
                 return len(data)
         except Exception as e:
             msg = "unable to create file {} because: {}".format(path, e)
             raise UtilityException(BasicCodeEnum.MSG_0003, msg)
-        finally:
-            set_in.close()
 
     @staticmethod
     def copy_to_temp(data: bytes, prefix: str, call_fn=None):
@@ -176,55 +168,6 @@ class PathUtils(object):
             loop_fn(tmp, root, files)
 
         return tmp
-
-    # 该方法若在windows下，无法正确解析参数为file://C:/tmp/user的path
-    # 需要自行修改为file:///C:/tmp/user，或者采用scheme传参方式"C:/tmp/user", "file"
-    @staticmethod
-    def to_uri(set_uri: str, scheme=None):
-        ValidateUtils.not_null("to_uri", set_uri)
-
-        if scheme:
-            if not set_uri.startswith("/"):
-                set_uri = "/" + set_uri
-            uri_p = URI(
-                scheme=scheme,
-                path=set_uri.replace(" ", "%20"))
-        else:
-            uri_p = URI(set_uri.replace(" ", "%20"))
-        return uri_p if uri_p.scheme else URI(
-            scheme="string",
-            path=set_uri.replace(" ", "%20"))
-
-    @staticmethod
-    def resolve(set_uri: URI, target: str):
-        try:
-            uri_s = str(set_uri)
-            set_uri = PathUtils.to_uri(uri_s + ("" if uri_s.endswith("/") else "/"))
-        except ValidateException:
-            return uri
-        else:
-            target = parse.quote(
-                target,
-                encoding=SystemUtils.LOCAL_ENCODING)
-            return set_uri.resolve(target.replace("+", "%20").replace("%21", "!").replace("%27", "'").replace(
-                "%28", "(").replace("%29", ")").replace("%7E", "~"))
-
-    # Python版本方法，用于从URI转换
-    @staticmethod
-    def from_uri(set_uri: URI):
-        if not set_uri.scheme or set_uri.scheme != "file":
-            raise UtilityException(BasicCodeEnum.MSG_0005, "URI scheme is not 'file'")
-        if set_uri.fragment:
-            raise UtilityException(BasicCodeEnum.MSG_0005, "URI has a fragment component")
-        if set_uri.query:
-            raise UtilityException(BasicCodeEnum.MSG_0005, "URI has a query component")
-        path = str(set_uri.path)
-
-        if not path:
-            raise UtilityException(BasicCodeEnum.MSG_0005, "URI path component is empty")
-        if len(path) > 2 and path[2] == ':':
-            path = path[1:]
-        return parse.unquote(path)
 
     # Python版本方法，用于追加path
     @staticmethod

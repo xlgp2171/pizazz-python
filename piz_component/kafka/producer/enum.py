@@ -1,5 +1,7 @@
-""""""
-from piz_component.kafka import helper as hr
+""" 发布枚举
+
+"""
+from piz_component.kafka import helper
 from piz_base import PathUtils, YAMLUtils
 from piz_component.kafka.kafka_e import KafkaCodeEnum, KafkaException
 
@@ -24,9 +26,9 @@ class ProducerModeEnum(object):
     # 异步事务发送
     ASYNC_TRANSACTION = _ProducerMode("ASYNC_TRANSACTION", False, True)
     # 同步事务发送
-    SYNC_TRANSACTION = _ProducerMode("SYNC_TRANSACTION", False, True)
+    SYNC_TRANSACTION = _ProducerMode("SYNC_TRANSACTION", True, True)
     # 异步发送
-    ASYNC = _ProducerMode("ASYNC", True, False)
+    ASYNC = _ProducerMode("ASYNC", False, False)
     # 同步发送
     SYNC = _ProducerMode("SYNC", True, False)
 
@@ -47,8 +49,8 @@ class _ProducerTemplate(object):
     def fill(self, client_c, config_c):
         if self.__name != ProducerTemplateEnum.NONE.__name:
             config = YAMLUtils.from_yaml(str(self.__resource).format(self.__name.lower()))
-            hr.merge(config, "client", client_c)
-            hr.merge(config, "config", config_c)
+            helper.merge(config, "client", client_c)
+            helper.merge(config, "config", config_c)
         return client_c, config_c
 
 

@@ -28,11 +28,9 @@ setup(
 		]
 	},
     install_requires=[
-        'kafka-python>=1.4.4',
-        'redis>=3.2.0',
-        'uri>=2.0.1',
-        'pyyaml>=5.1',
-        'python-dateutil>=2.8.0',
-        'redis-py-cluster>=2.1.0'
+        'kafka-python>=2.0.2',
+        'redis>=4.3.4',
+        'pyyaml>=6.0',
+        'python-dateutil>=2.8.2'
 	],
     zip_safe=False)

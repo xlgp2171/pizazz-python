@@ -12,13 +12,13 @@ client:
   max_poll_records: 600
   receive_buffer_bytes: 65536
   send_buffer_bytes: 131072
-  auto_commit_interval_ms： 1000
+  auto_commit_interval_ms: 1000
   fetch_max_wait_ms: 500
 config:
   mode: MANUAL_SYNC_EACH
   ignore: NONE
   duration: 5000
-  offsetProcessor:
+  offset-processor:
     classpath: piz_component.kafka.consumer.plugin.OffsetProcessor
-  dataProcessor:
+  data-processor:
     classpath: piz_component.kafka.consumer.plugin.SequenceAdapter

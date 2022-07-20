@@ -1,4 +1,6 @@
-""""""
+""" 发送具体实现
+
+"""
 import logging
 
 from piz_base import IPlugin
@@ -7,9 +9,9 @@ from piz_component.kafka.kafka_e import KafkaException, KafkaCodeEnum
 logger = logging.getLogger(__name__)
 
 
-class SenderProcessor(IPlugin):
-    def __init__(self, mode):
-        self.__mode = mode
+class SenderProcessor(object):
+    def __init__(self, mode, config):
+        self._mode = mode
 
     def sent_data(self, producer, record, callback):
         try:
@@ -18,7 +20,7 @@ class SenderProcessor(IPlugin):
                 lambda metadata: self._on_completion(metadata, callback)).add_errback(
                 lambda set_e: self._on_error(set_e, callback))
 
-            if self.__mode.is_sync():
+            if self._mode.is_sync():
                 tmp.get()
             return tmp
         except Exception as e:

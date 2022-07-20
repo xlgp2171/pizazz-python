@@ -1,10 +1,13 @@
-""""""
-from kafka.consumer.fetcher import ConsumerRecord
+""" 订阅接口
 
+"""
 from piz_base import IPlugin, IObject
 
 
 class IOffsetProcessor(IPlugin):
+    def batch(self, consumer, records: list):
+        raise NotImplementedError("not supported 'batch'")
+
     def each(self, consumer, record):
         raise NotImplementedError("not supported 'each'")
 
@@ -27,18 +30,20 @@ class IOffsetProcessor(IPlugin):
         raise NotImplementedError("not supported 'optimize_kafka_config'")
 
 
-class IDataExecutor(object):
-    def begin(self):
+class IDataRecord(object):
+    def begin(self, count):
         pass
-
-    def execute(self, record: ConsumerRecord):
-        raise NotImplementedError("not supported 'execute'")
 
     def end(self, offset):
         pass
 
     def throw_exception(self, e):
         pass
+
+
+class IMultiDataExecutor(IDataRecord):
+    def execute(self, records: list):
+        raise NotImplementedError("not supported 'execute'")
 
 
 class IProcessAdapter(IPlugin):
@@ -48,8 +53,8 @@ class IProcessAdapter(IPlugin):
     def accept(self, bridge, ignore):
         raise NotImplementedError("not supported 'accept'")
 
-    def monitor(self):
-        raise NotImplementedError("not supported 'monitor'")
+    def report(self):
+        raise NotImplementedError("not supported 'report'")
 
 
 class IBridge(IObject):

@@ -1,4 +1,6 @@
-""""""
+""" 序列化工具类
+
+"""
 from kafka.serializer.abstract import Deserializer
 from kafka.serializer.abstract import Serializer
 
@@ -6,22 +8,22 @@ from kafka.serializer.abstract import Serializer
 class StringSerializer(Serializer):
     def __init__(self, **config):
         super(StringSerializer, self).__init__()
-        self.__encoding = "UTF-8"
+        self._encoding = "UTF-8"
 
         if config and "serializer_encoding" in config:
-            self.__encoding = config.get("serializer_encoding", self.__encoding)
+            self._encoding = config.get("serializer_encoding", self._encoding)
 
     def serialize(self, topic, value):
-        return None if value is None else bytes(value, self.__encoding)
+        return "" if value is None else bytes(value, self._encoding)
 
 
 class StringDeserializer(Deserializer):
     def __init__(self, **config):
         super(StringDeserializer, self).__init__()
-        self.__encoding = "UTF-8"
+        self._encoding = "UTF-8"
 
         if config and "deserializer_encoding" in config:
-            self.__encoding = config.get("deserializer_encoding", self.__encoding)
+            self._encoding = config.get("deserializer_encoding", self._encoding)
 
     def deserialize(self, topic, value):
-        return None if value is None else str(value, self.__encoding)
+        return "" if value is None else str(value, self._encoding)

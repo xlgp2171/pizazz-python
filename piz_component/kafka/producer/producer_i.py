@@ -1,4 +1,6 @@
-""""""
+""" 发布接口
+
+"""
 from piz_base import IPlugin
 
 

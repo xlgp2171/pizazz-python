@@ -7,6 +7,6 @@ client:
   partitioner: piz_component.kafka.support.RandomPartitioner
 config:
   mode: ASYNC
-  transactionProcessor:
+  transaction-processor:
     classpath: piz_component.kafka.producer.plugin.TransactionProcessor
-  senderProcessor: 
+  sender-processor:

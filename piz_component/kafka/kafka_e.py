@@ -1,5 +1,7 @@
-""""""
-from piz_base import AbstractException
+""" Kafka异常类
+
+"""
+from piz_base.base_e import BaseRuntimeException
 
 
 class KafkaCodeEnum(object):
@@ -36,6 +38,6 @@ class KafkaCodeEnum(object):
     KFK_0015 = "KFK0015#"
 
 
-class KafkaException(AbstractException):
+class KafkaException(BaseRuntimeException):
     def __init__(self, code, msg):
         super(KafkaException, self).__init__(code, msg)

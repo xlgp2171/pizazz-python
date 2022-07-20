@@ -1,4 +1,6 @@
-""""""
+""" 订阅相关枚举
+
+"""
 from piz_component.kafka import helper as hr
 from piz_base import YAMLUtils, PathUtils
 from piz_component.kafka.kafka_e import KafkaException, KafkaCodeEnum
@@ -6,27 +8,27 @@ from piz_component.kafka.kafka_e import KafkaException, KafkaCodeEnum
 
 class _ConsumerIgnore(object):
     def __init__(self, name, offset, consume):
-        self.__name = name
-        self.__offset = offset
-        self.__consume = consume
+        self._name = name
+        self._offset = offset
+        self._consume = consume
 
     def offset_throwable(self):
-        return self.__offset
+        return self._offset
 
     def consume_throwable(self):
-        return self.__consume
+        return self._consume
 
     def __str__(self):
-        return self.__name
+        return self._name
 
 
 class ConsumerIgnoreEnum(object):
     # 忽略offset和consume异常
     OFFSET_CONSUME = _ConsumerIgnore("OFFSET_CONSUME", False, False)
     # 忽略consume异常
-    CONSUME = _ConsumerIgnore("CONSUME", False, True)
+    CONSUME = _ConsumerIgnore("CONSUME", True, False)
     # 忽略offset异常
-    OFFSET = _ConsumerIgnore("OFFSET", True, False)
+    OFFSET = _ConsumerIgnore("OFFSET", False, True)
     # 无任何忽略
     NONE = _ConsumerIgnore("NONE", True, True)
 
@@ -38,22 +40,22 @@ class ConsumerIgnoreEnum(object):
 
 class _ConsumerMode(object):
     def __init__(self, name, auto, sync, each):
-        self.__name = name
-        self.__auto = auto
-        self.__sync = sync
-        self.__each = each
+        self._name = name
+        self._auto = auto
+        self._sync = sync
+        self._each = each
 
     def is_auto(self):
-        return self.__auto
+        return self._auto
 
     def is_sync(self):
-        return self.__sync
+        return self._sync
 
     def is_each(self):
-        return self.__each
+        return self._each
 
     def __str__(self):
-        return self.__name
+        return self._name
 
 
 class ConsumerModeEnum(object):
@@ -81,12 +83,12 @@ class ConsumerModeEnum(object):
 
 class _ConsumerTemplate(object):
     def __init__(self, name):
-        self.__name = name
-        self.__resource = PathUtils.to_file_path(__file__, "../", "resource", "{}.yml")
+        self._name = name
+        self._resource = PathUtils.to_file_path(__file__, "../", "resource", "{}.yml")
 
     def fill(self, client_c, config_c):
-        if self.__name != ConsumerTemplateEnum.NONE.__name:
-            config = YAMLUtils.from_yaml(str(self.__resource).format(self.__name.lower()))
+        if self._name != ConsumerTemplateEnum.NONE._name:
+            config = YAMLUtils.from_yaml(str(self._resource).format(self._name.lower()))
             hr.merge(config, "client", client_c)
             hr.merge(config, "config", config_c)
         return client_c, config_c

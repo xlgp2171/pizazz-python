@@ -1,4 +1,6 @@
-""""""
+""" Redis实例接口
+
+"""
 from piz_base import IPlugin
 
 
@@ -11,32 +13,26 @@ class IRedisProcessor(object):
     def set(self, key: str, value: str):
         raise NotImplementedError("not supported 'set'")
 
-    def bset(self, key: str, value):
-        raise NotImplementedError("not supported 'bset'")
+    def get_string(self, key: str, encoding="UTF-8"):
+        raise NotImplementedError("not supported 'get_string'")
 
-    def hmset(self, key: str, set_map: dict):
-        raise NotImplementedError("not supported 'hmset'")
+    def set_binary(self, key: str, value):
+        raise NotImplementedError("not supported 'set_binary'")
 
-    def hset(self, key: str, field: str, value):
-        raise NotImplementedError("not supported 'hset'")
+    def get_binary(self, key: str):
+        raise NotImplementedError("not supported 'get_binary'")
 
-    def get(self, key: str, encoding="UTF-8"):
-        raise NotImplementedError("not supported 'get'")
+    def set_all_map(self, key: str, set_map: dict):
+        raise NotImplementedError("not supported 'set_all_map'")
 
-    def bget(self, key: str):
-        raise NotImplementedError("not supported 'bget'")
+    def get_all_map(self, key: str):
+        raise NotImplementedError("not supported 'get_all_map'")
 
-    def hget(self, key: str, field: str):
-        raise NotImplementedError("not supported 'hget'")
+    def get_map_by_key(self, key: str, *fields: str):
+        raise NotImplementedError("not supported 'get_map_by_key'")
 
-    def hmget(self, key: str):
-        raise NotImplementedError("not supported 'hmget'")
+    def remove(self, *key: str):
+        raise NotImplementedError("not supported 'remove'")
 
-    def hdel(self, key: str, field: str):
-        raise NotImplementedError("not supported 'hdel'")
-
-    def delete(self, *key: str):
-        raise NotImplementedError("not supported 'dele'")
-
-    def keys(self, pattern: str):
+    def keys(self, pattern: str, encoding='UTF-8'):
         raise NotImplementedError("not supported 'keys'")

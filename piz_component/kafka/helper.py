@@ -1,4 +1,6 @@
-""""""
+""" Kafka工具类
+
+"""
 
 
 def merge(config, key, mix):

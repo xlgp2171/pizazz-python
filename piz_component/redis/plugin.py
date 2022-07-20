@@ -1,82 +1,78 @@
-""""""
-from redis import Redis, ConnectionPool
-from rediscluster import RedisCluster
+""" Redis操作实现
+
+"""
+from redis import Redis, ConnectionPool, RedisCluster
 
 from piz_component.redis.redis_i import IRedisProcessor, IRedisAdapter
 
 
 class ClusterAdapter(IRedisAdapter):
     def __init__(self):
-        self.__instance: RedisCluster = None
+        self._instance = None
 
     def initialize(self, config):
         if isinstance(config, dict):
             cluster_config = config.get("client", {})
-            self.__instance = RedisCluster(**cluster_config)
+            self._instance = RedisCluster(**cluster_config)
 
     def get_processor(self):
-        return DefaultProcessor(self.__instance)
+        return DefaultProcessor(self._instance)
 
     def destroy(self, timeout=0):
-        if self.__instance:
-            self.__instance.connection_pool.disconnect()
+        if self._instance:
+            self._instance.connection_pool.disconnect()
 
 
-class DefaultAdapter(IRedisAdapter):
+class SingleAdapter(IRedisAdapter):
     def __init__(self):
-        self.__pool = None
+        self._pool = None
 
     def initialize(self, config):
         if isinstance(config, dict):
             pool_config = config.get("client", {})
             pool = ConnectionPool(**pool_config)
-            self.__pool = Redis(
+            self._pool = Redis(
                 connection_pool=pool)
 
     def get_processor(self):
-        return DefaultProcessor(self.__pool)
+        return DefaultProcessor(self._pool)
 
     def destroy(self, timeout=0):
-        if self.__pool:
-            self.__pool.connection_pool.disconnect()
+        if self._pool:
+            self._pool.connection_pool.disconnect()
 
 
 class DefaultProcessor(IRedisProcessor):
     def __init__(self, instance):
         if isinstance(instance, Redis) or isinstance(instance, RedisCluster):
-            self.instance = instance
+            self._instance = instance
 
-    def set(self, key, value):
-        return self.bset(key, value)
+    def set(self, key: str, value: str):
+        return self.set_binary(key, value)
 
-    def bset(self, key, value):
-        return self.instance.set(key, value)
+    # noinspection PyTypeChecker
+    def get_string(self, key: str, encoding="UTF-8"):
+        tmp = self.get_binary(key)
+        return str(tmp, encoding=encoding) if tmp else ""
 
-    def hmset(self, key, set_map):
-        return self.instance.hmset(key, set_map)
+    def set_binary(self, key: str, value):
+        return self._instance.set(key, value)
 
-    def hset(self, key, field, value):
-        return self.instance.hset(key, field, value)
+    def get_binary(self, key: str):
+        return self._instance.get(key)
 
-    def get(self, key, encoding="UTF-8"):
-        return str(
-            self.bget(key),
-            encoding=encoding)
+    def set_all_map(self, key: str, set_map: dict):
+        return self._instance.hset(key, mapping=set_map)
 
-    def bget(self, key):
-        return self.instance.get(key)
+    def get_all_map(self, key: str):
+        return self._instance.hgetall(key)
 
-    def hget(self, key, field):
-        return self.instance.hget(key, field)
+    def get_map_by_key(self, key: str, *fields: str):
+        return self._instance.hmget(key, *fields)
 
-    def hmget(self, key):
-        return self.instance.hgetall(key)
+    def remove(self, *key: str):
+        return self._instance.delete(*key)
 
-    def hdel(self, key, field):
-        return self.instance.hdel(key, field)
-
-    def delete(self, *key):
-        return self.instance.delete(*key)
-
-    def keys(self, pattern):
-        return self.instance.keys(pattern)
+    def keys(self, pattern: str, encoding='UTF-8'):
+        keys = self._instance.keys(pattern)
+        return [str(x, encoding=encoding) for x in keys]
