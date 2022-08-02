@@ -4,7 +4,7 @@ client:
   batch_size: 128
   linger_ms: 1
   # enable_idempotence: False
-  partitioner: piz_component.kafka.support.RandomPartitioner
+  partitioner: piz_component.kafka.core.RandomPartitioner
 config:
   mode: ASYNC
   transaction-processor:

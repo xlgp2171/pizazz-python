@@ -13,7 +13,7 @@ import uuid
 from piz_base.context import RuntimeContext
 from piz_base.base_i import ICloseable
 from piz_base.base_e import BasicCodeEnum, IllegalException
-from piz_base.common.enum import OSTypeEnum
+from piz_base.common.enums import OSTypeEnum
 from piz_base.common.validate_utils import ValidateUtils
 
 

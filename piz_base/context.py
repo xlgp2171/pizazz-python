@@ -44,7 +44,7 @@ class RuntimeContext(object):
                     pass
 
     def _register_signal(self):
-        from piz_base.common.enum import OSTypeEnum
+        from piz_base.common.enums import OSTypeEnum
         from piz_base.common.tool_utils import SystemUtils
         # ctrl+c 信号
         self._shutdown_hook[RuntimeContext.PREFIX + str(signal.SIGINT)] = signal.getsignal(signal.SIGINT)

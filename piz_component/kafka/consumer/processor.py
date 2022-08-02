@@ -23,7 +23,7 @@ class DataProcessor(AbstractClassPlugin, ICloseable):
         ins = self.load_plugin("classpath", SequenceAdapter(), True)
         adapter = self.cast(ins, IProcessAdapter)
         adapter.set(mode)
-        logger.info("subscription data processor initialized,config={}".format(config))
+        logger.info("subscription data processor initialized,config={}".format(self.get_config()))
         return adapter
 
     def optimize_kafka_config(self, kafka_config):

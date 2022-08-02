@@ -2,8 +2,8 @@
 
 """
 import logging
+import traceback
 
-from piz_base import IPlugin
 from piz_component.kafka.kafka_e import KafkaException, KafkaCodeEnum
 
 logger = logging.getLogger(__name__)
@@ -24,6 +24,7 @@ class SenderProcessor(object):
                 tmp.get()
             return tmp
         except Exception as e:
+            logger.error(traceback.format_exc(limit=10))
             raise KafkaException(KafkaCodeEnum.KFK_0012, "data send:{}".format(str(e)))
 
     # Python版本修改功能：由于方法参数不一致

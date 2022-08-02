@@ -30,6 +30,9 @@ class AbstractContainer(IPlugin):
         else:
             return 0
 
+    def _get_runnable(self):
+        return self._runnable
+
     def log(self, msg, e=None):
         raise NotImplementedError("not supported 'log'")
 
@@ -93,6 +96,11 @@ class SocketContainer(AbstractContainer):
         self.__closed = False
         self.__lock = threading.Lock()
 
+    @staticmethod
+    def run(runnable: IRunnable, config: dict = None, output: IMessageOutput = None):
+        SocketContainer(runnable, config if config else {}, output if output else IMessageOutput())\
+            .activate().wait_for_shutdown()
+
     def initialize(self, config: dict):
         super(SocketContainer, self).initialize(config)
         host = config.get("host", "")
@@ -108,6 +116,10 @@ class SocketContainer(AbstractContainer):
 
     def get_id(self):
         return self.__class__.__name__
+
+    def activate(self):
+        super()._get_runnable().run()
+        return self
 
     def wait_for_shutdown(self):
         self.__hook = SystemUtils.add_shutdown_hook(self)

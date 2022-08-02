@@ -9,14 +9,14 @@ from kafka.structs import TopicPartition
 from piz_base.base_e import BaseRuntimeException
 from piz_component.kafka import helper as hr
 from piz_base import BasicCodeEnum, ICloseable, SystemUtils, NumberUtils, AbstractClassPlugin, ValidateUtils
-from piz_component.kafka.consumer.enum import ConsumerTemplateEnum, ConsumerModeEnum, ConsumerIgnoreEnum
+from piz_component.kafka.consumer.enums import ConsumerTemplateEnum, ConsumerModeEnum, ConsumerIgnoreEnum
 from piz_component.kafka.kafka_e import KafkaException, KafkaCodeEnum
-from piz_component.kafka.producer.enum import ProducerTemplateEnum, ProducerModeEnum
+from piz_component.kafka.producer.enums import ProducerTemplateEnum, ProducerModeEnum
 
 logger = logging.getLogger(__name__)
 
 
-class AbstractClient(AbstractClassPlugin):
+class AbstractClient(AbstractClassPlugin, ICloseable):
     def __init__(self, configure):
         super(AbstractClient, self).__init__(configure)
         # 创建配置类

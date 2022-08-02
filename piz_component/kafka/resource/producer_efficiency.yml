@@ -9,7 +9,7 @@ client:
   request_timeout_ms: 30000
   # enable_idempotence: False
   max_in_flight_requests_per_connection: 15
-  partitioner: piz_component.kafka.support.RandomPartitioner
+  partitioner: piz_component.kafka.core.RandomPartitioner
 config:
   mode: ASYNC
   transaction-processor:

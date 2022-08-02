@@ -10,7 +10,7 @@ from kafka.structs import OffsetAndMetadata, TopicPartition
 from kafka.serializer.abstract import Deserializer
 
 from piz_base import BooleanUtils, ClassUtils, JSONUtils, NumberUtils
-from piz_component.kafka.consumer.enum import ConsumerModeEnum, KafkaCodeEnum
+from piz_component.kafka.consumer.enums import ConsumerModeEnum, KafkaCodeEnum
 from piz_component.kafka.consumer.consumer_i import IProcessAdapter, IOffsetProcessor
 from piz_component.kafka.kafka_e import KafkaException
 

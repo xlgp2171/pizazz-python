@@ -16,12 +16,12 @@ logger = logging.getLogger(__name__)
 
 class Subscription(AbstractClient):
     def __init__(self, configure):
-        super(Subscription, self).__init__(configure)
         self._lock = threading.Lock()
         self._loop = True
         self._consumer = None
         self._offset = None
         self._processor = None
+        super(Subscription, self).__init__(configure)
 
     def initialize(self):
         from piz_component.kafka.consumer.plugin import OffsetProcessor
@@ -124,10 +124,10 @@ class Subscription(AbstractClient):
 
 class Production(AbstractClient):
     def __init__(self, configure):
-        super(Production, self).__init__(configure)
         self._producer = None
         self._transaction = None
         self._processor = None
+        super(Production, self).__init__(configure)
 
     def initialize(self):
         from piz_component.kafka.producer.plugin import TransactionProcessor

@@ -45,10 +45,11 @@ class YAMLUtils(object):
 
 class JSONUtils(object):
     @staticmethod
-    def to_json(target, encode=None):
+    def to_json(target, encode=None, cls=None):
         try:
             return json.dumps(
                 target,
+                cls=cls,
                 default=encode)
         except Exception as e:
             raise IllegalException(BasicCodeEnum.MSG_0013, "json could not parse because: {}".format(e))

@@ -9,8 +9,7 @@ class IObject(object):
     def get_id(self):
         return id(self)
 
-    @classmethod
-    def is_empty(cls):
+    def is_empty(self):
         return False
 
 
@@ -77,7 +76,7 @@ class IMessageOutput(ICloseable):
         return False
 
     def write(self, message):
-        raise NotImplementedError("not supported 'write'")
+        pass
 
     @classmethod
     def throw_exception(cls, e):

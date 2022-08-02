@@ -1,14 +1,15 @@
 """"""
 
-from piz_component.kafka.consumer.consumer_i import IDataExecutor, IOffsetProcessor, IProcessAdapter
-from piz_component.kafka.consumer.enum import ConsumerIgnoreEnum, ConsumerModeEnum, ConsumerTemplateEnum
-from piz_component.kafka.producer.enum import ProducerModeEnum, ProducerTemplateEnum
+from piz_component.kafka.consumer.consumer_i import IDataRecord, IMultiDataExecutor, IOffsetProcessor, IProcessAdapter
+from piz_component.kafka.consumer.enums import ConsumerIgnoreEnum, ConsumerModeEnum, ConsumerTemplateEnum
+from piz_component.kafka.producer.enums import ProducerModeEnum, ProducerTemplateEnum
 from piz_component.kafka.producer.producer_i import ITransactionProcessor
 from piz_component.kafka.client import Subscription, Production
 from piz_component.kafka.kafka_e import KafkaCodeEnum, KafkaException
 
 __all__ = [
-    'IDataExecutor',
+    'IDataRecord',
+    'IMultiDataExecutor',
     'IOffsetProcessor',
     'IProcessAdapter',
     'ConsumerIgnoreEnum',
