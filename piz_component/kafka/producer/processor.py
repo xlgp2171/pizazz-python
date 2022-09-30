@@ -38,7 +38,7 @@ class SenderProcessor(object):
     # Python版本修改功能：由于方法参数不一致
     @classmethod
     def _on_error(cls, e, callback):
-        logger.error("data send:{}".format(str(e)))
+        logger.error("data send:{}".format(traceback.format_exc(limit=20)))
 
         if callback:
             callback(None, e)

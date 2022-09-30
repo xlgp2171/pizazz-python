@@ -1,6 +1,7 @@
 """"""
 import logging
 import threading
+import traceback
 from kafka import KafkaConsumer, KafkaProducer
 
 from piz_base import ValidateUtils, SystemUtils
@@ -81,7 +82,7 @@ class Subscription(AbstractClient):
                 records = self._consumer.poll(duration)
             except Exception as e:
                 if self._loop:
-                    logger.error("{} pool data:{}".format(self._loop, str(e)))
+                    logger.error("{} pool data:{}".format(self._loop, traceback.format_exc(limit=20)))
 
                     if self.get_convertor().consumer_ignore_value().consume_throwable():
                         self._loop = False
@@ -102,7 +103,7 @@ class Subscription(AbstractClient):
                 self._processor.consume_complete(self._consumer, impl)
             except KafkaException as e:
                 self._processor.consume_complete(self._consumer, impl, e)
-                logger.error("consume data:{}".format(e.get_message()))
+                logger.error("consume data:{} {}".format(e.get_message(), traceback.format_exc(limit=20)))
 
                 if self.get_convertor().consumer_ignore_value().consume_throwable():
                     self._loop = False

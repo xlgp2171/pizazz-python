@@ -4,6 +4,7 @@
 import logging
 import threading
 import copy
+import traceback
 
 from kafka.consumer.subscription_state import ConsumerRebalanceListener
 from kafka.structs import OffsetAndMetadata, TopicPartition
@@ -41,7 +42,7 @@ class SequenceAdapter(IProcessAdapter):
                 msg = "consume:{} {}".format(bridge.get_id(), str(e))
                 raise KafkaException(KafkaCodeEnum.KFK_0010, msg)
             else:
-                logger.warning("consume:{} {}".format(bridge.get_id(), str(e)))
+                logger.warning("consume:{} {}".format(bridge.get_id(), traceback.format_exc(limit=20)))
 
     def report(self):
         return JSONUtils.to_json({"STATUS": "activate", "MODE": str(self._mode), "ADAPTER": str(self.__class__)})
@@ -63,7 +64,7 @@ class OffsetProcessor(IOffsetProcessor):
 
     def _callback(self, offsets, e):
         if e and isinstance(e, Exception):
-            logger.error("consumer commit:{} {}".format(offsets, str(e)))
+            logger.error("consumer commit:{} {}".format(offsets, traceback.format_exc(limit=20)))
         elif offsets:
             self._make_committed(offsets)
 
@@ -87,7 +88,7 @@ class OffsetProcessor(IOffsetProcessor):
                     if self._ignore.offset_throwable():
                         raise KafkaException(KafkaCodeEnum.KFK_0006, "consumer commit:{} {}".format(tmp, str(e)))
                     else:
-                        logger.warning("consumer commit:{} {}".format(tmp, str(e)))
+                        logger.warning("consumer commit:{} {}".format(tmp, traceback.format_exc(limit=20)))
                 else:
                     # 同步情况下提交重试
                     self._offset_commit(consumer, force, retries + 1)
