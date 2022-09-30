@@ -16,16 +16,15 @@ def level_to_name(level):
 
 
 class _RotatingFileHandler(RotatingFileHandler, logging.StreamHandler):
-    def __init__(self, log_name, level, max_bytes=20*1024*1024, backup_count=10):
-        _project_path = os.path.dirname(os.path.dirname(__file__))
-        _filename = os.path.join(_project_path, "logs", f"{log_name}_{level_to_name(level)}.log")
+    def __init__(self, log_name, level, project_path="", max_bytes=20*1024*1024, backup_count=10):
+        _filename = os.path.join(project_path, "logs", f"{log_name}_{level_to_name(level)}.log")
         super().__init__(filename=_filename, maxBytes=max_bytes, backupCount=backup_count)
 
 
 # noinspection PyArgumentList
-def logging_set_up(log_tag="", level=logging.INFO, log_format="%(asctime)s %(message)s", **kwargs):
+def logging_set_up(log_tag="", project_path="", level=logging.INFO, log_format="%(asctime)s %(message)s", **kwargs):
     if log_tag:
-        handlers = [_RotatingFileHandler(log_tag, level, **kwargs)]
+        handlers = [_RotatingFileHandler(log_tag, level, project_path, **kwargs)]
     else:
         handlers = [logging.StreamHandler()]
     logging.basicConfig(
